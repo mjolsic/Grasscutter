@@ -42,6 +42,10 @@ public class GameMainQuest {
     @Getter private ParentQuestState state;
     @Getter private boolean isFinished;
     @Getter List<QuestGroupSuite> questGroupSuites;
+    // used to track already added group suites, so that it 
+    // doesnt keep incrementing on every rewind, 
+    // TODO probably change group suites to hash map for better organisation
+    @Getter Set<Integer> groupSuitesTracker;
 
     @Getter int[] suggestTrackMainQuestList;
     @Getter private Map<Integer,TalkData> talks;
@@ -60,6 +64,7 @@ public class GameMainQuest {
         this.questVars = new int[] {0,0,0,0,0};
         this.state = ParentQuestState.PARENT_QUEST_STATE_NONE;
         this.questGroupSuites = new ArrayList<>();
+        this.groupSuitesTracker = new TreeSet<>();
         addAllChildQuests();
     }
 
@@ -164,7 +169,7 @@ public class GameMainQuest {
         // handoff main quest
         if (mainQuestData.getSuggestTrackMainQuestList() != null) {
             Arrays.stream(mainQuestData.getSuggestTrackMainQuestList())
-                .forEach(getQuestManager()::startMainQuest);
+                .forEach((mainQuestId) -> {getQuestManager().startMainQuest(true, mainQuestId, false, "", 0);});
         }
     }
     //TODO
@@ -387,6 +392,7 @@ public class GameMainQuest {
 
                 if (shouldFinish)
                     subQuestWithCond.finish();
+                    getOwner().getProgressManager().tryUnlockOpenStates();
             }
         } catch (Exception e) {
             Grasscutter.getLogger().debug("An error occurred while trying to finish quest.", e);

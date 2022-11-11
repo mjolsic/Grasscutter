@@ -64,6 +64,7 @@ public class GameItem {
 
     @Getter @Setter private int equipCharacter;
     @Transient @Getter @Setter private int weaponEntityId;
+    @Transient @Getter private boolean newItem = false;
 
     public GameItem() {
         // Morphia only
@@ -129,6 +130,10 @@ public class GameItem {
     public void setOwner(Player player) {
         this.ownerId = player.getUid();
         this.guid = player.getNextGameGuid();
+        // display notification when player obtain new item
+        if (player.getInventory().getItemByGuid(this.itemId) == null){
+            this.newItem = true;
+        }
     }
 
     public ObjectId getObjectId() {
@@ -354,7 +359,7 @@ public class GameItem {
     }
 
     public ItemHint toItemHintProto() {
-        return ItemHint.newBuilder().setItemId(getItemId()).setCount(getCount()).setIsNew(false).build();
+        return ItemHint.newBuilder().setItemId(getItemId()).setCount(getCount()).setIsNew(isNewItem()).build();
     }
 
     public ItemParam toItemParam() {

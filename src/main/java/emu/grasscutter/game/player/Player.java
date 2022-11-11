@@ -198,6 +198,10 @@ public class Player {
     @Getter @Setter private int nextResinRefresh;
     @Getter @Setter private int lastDailyReset;
     @Getter private transient MpSettingType mpSetting = MpSettingType.MP_SETTING_TYPE_ENTER_AFTER_APPLY;  // TODO
+    // keep track of EXEC_ADD_QUEST_PROGRESS count, will be used in CONTENT_ADD_QUEST_PROGRESS
+    // not sure where to put this, this should be saved to DB but not to individual quest, since 
+    // it will be hard to loop and compare
+    @Getter private Map<Integer, Integer> questProgressCountMap;
 
     @Deprecated
     @SuppressWarnings({"rawtypes", "unchecked"}) // Morphia only!
@@ -266,6 +270,7 @@ public class Player {
         this.furnitureManager = new FurnitureManager(this);
         this.cookingManager = new CookingManager(this);
         this.cookingCompoundManager=new CookingCompoundManager(this);
+        this.questProgressCountMap = new HashMap<>();
     }
 
     // On player creation
@@ -1206,20 +1211,6 @@ public class Player {
     }
 
     public void onLogin() {
-        // Quest - Commented out because a problem is caused if you log out while this quest is active
-        /*
-        if (getQuestManager().getMainQuestById(351) == null) {
-            GameQuest quest = getQuestManager().addQuest(35104);
-            if (quest != null) {
-                quest.finish();
-            }
-            getQuestManager().addQuest(35101);
-
-            this.setSceneId(3);
-            this.getPos().set(GameConstants.START_POSITION);
-        }
-        */
-
         // Create world
         World world = new World(this);
         world.addPlayer(this);

@@ -11,12 +11,15 @@ public class ContentAddQuestProgress extends BaseContent {
 
     @Override
     public boolean execute(GameQuest quest, QuestData.QuestContentCondition condition, String paramStr, int... params) {
-        /*
-            //paramStr is a lua group, params[0] may also be a lua group!
-             questid = xxxxxx lua group = xxxxxxyy
-            count seems relevant only for lua group
-        */
-        return condition.getParam()[0] == params[0]; //missing params[1], paramStr, and count
+        // param[0] have nothing to do with the lua group I think, it comes from EXEC_ADD_PROGRESS
+        // if the condition count is 0 I think it is safe to assume that the
+        // condition count from EXEC only needs to be 1
+        int count = condition.getCount() > 0 ? condition.getCount() : 1;
+        if (quest.getOwner().getQuestProgressCountMap().get(params[0]) == null
+            || quest.getOwner().getQuestProgressCountMap().get(params[0]) < count){
+                return false;
+        }
+        return true;
     }
 
 }

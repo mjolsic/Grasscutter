@@ -52,6 +52,15 @@ public class HandlerSetPlayerBornDataReq extends PacketHandler {
             player.setMainCharacterId(avatarId);
             player.setHeadImage(avatarId);
             player.getTeamManager().getCurrentSinglePlayerTeamInfo().getAvatars().add(mainCharacter.getAvatarId());
+
+            // Give replace costume to player (Ambor, Jean, Mona, Rosaria)
+            GameData.getAvatarReplaceCostumeDataMap().keySet().forEach(costumeId -> {
+                if (GameData.getAvatarCostumeDataMap().get(costumeId) == null){
+                    return;
+                }
+                player.addCostume(costumeId);
+            });
+
             player.save(); // TODO save player team in different object
         } else {
             return;

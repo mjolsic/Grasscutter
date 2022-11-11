@@ -3,6 +3,7 @@ package emu.grasscutter.data.excels;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
+import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 import emu.grasscutter.game.quest.enums.*;
@@ -95,6 +96,19 @@ public class QuestData extends GameResource {
         this.beginExec = beginExec.stream().filter(p -> p.type != null).toList();
         this.finishExec = finishExec.stream().filter(p -> p.type != null).toList();
         this.failExec = failExec.stream().filter(p -> p.type != null).toList();
+        boolean toAdd = false;
+        // filter out hidden quest to add on player born
+        if (this.getAcceptCond().size() == 0) {
+            toAdd = true;
+        } else {
+            if ((this.getAcceptCond().get(0).getType() == QuestCond.QUEST_COND_PLAYER_LEVEL_EQUAL_GREATER 
+            && this.getAcceptCond().get(0).getParam()[0] == 1)
+            || this.getAcceptCond().get(0).getType() == QuestCond.QUEST_COND_ACTIVITY_END) {
+                toAdd = true;
+            }
+        }
+        if (toAdd)
+            GameData.getDefaultQuests().add(this.getMainId());        
     }
 
     @Data

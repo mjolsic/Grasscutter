@@ -402,6 +402,11 @@ public class ResourceLoader {
                 try {
                     val mainQuest = JsonUtils.loadToClass(path, MainQuestData.class);
                     GameData.getMainQuestDataMap().put(mainQuest.getId(), mainQuest);
+                    if (mainQuest.getSuggestTrackMainQuestList() != null) {
+                        for (Integer mainId : mainQuest.getSuggestTrackMainQuestList()) {
+                            GameData.getTrackQuests().add(mainId);
+                        }
+                    }
                 } catch (IOException e) {
 
                 }
