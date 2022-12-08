@@ -306,7 +306,11 @@ public class World implements Iterable<Player> {
             // Home
             enterReason = EnterReason.EnterHome;
             enterType = EnterType.ENTER_TYPE_SELF_HOME;
+        } else if (newScene.getSceneType() == SceneType.SCENE_HOME_ROOM) {
+            enterReason = EnterReason.HomeSceneJump;
+            enterType = EnterType.ENTER_TYPE_SELF_HOME;
         }
+
 
         // Teleport packet
         player.sendPacket(new PacketPlayerEnterSceneNotify(player, enterType, enterReason, sceneId, teleportTo));
