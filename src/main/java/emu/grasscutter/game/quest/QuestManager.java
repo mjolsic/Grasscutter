@@ -253,7 +253,11 @@ public class QuestManager extends BasePlayerManager {
         return mainQuest;
     }
 
-    public GameQuest addQuest(int questId) {
+    public void removeMainQuest(int mainQuestId) {
+        getMainQuests().remove(mainQuestId);
+    }
+
+    public GameQuest addQuest(int questId, boolean shouldNotify) {
         QuestData questConfig = GameData.getQuestDataMap().get(questId);
 
         if (questConfig == null) {
