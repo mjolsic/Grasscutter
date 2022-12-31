@@ -1,8 +1,11 @@
 package emu.grasscutter.data.excels;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
+import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
@@ -36,6 +39,7 @@ public class QuestData extends GameResource {
     private List<QuestExecParam> finishExec;
     private List<QuestExecParam> failExec;
     private Guide guide;
+    private List<Integer> trialAvatarList;
 
     //ResourceLoader not happy if you remove getId() ~~
     public int getId() {
@@ -96,24 +100,41 @@ public class QuestData extends GameResource {
         this.beginExec = beginExec.stream().filter(p -> p.type != null).toList();
         this.finishExec = finishExec.stream().filter(p -> p.type != null).toList();
         this.failExec = failExec.stream().filter(p -> p.type != null).toList();
-        boolean toAdd = false;
-        // filter out hidden quest to add on player born
-        if (this.getAcceptCond().size() == 0) {
-            toAdd = true;
-        } else {
-            if ((this.getAcceptCond().get(0).getType() == QuestCond.QUEST_COND_PLAYER_LEVEL_EQUAL_GREATER 
-            && this.getAcceptCond().get(0).getParam()[0] == 1)
-            || this.getAcceptCond().get(0).getType() == QuestCond.QUEST_COND_ACTIVITY_END) {
-                toAdd = true;
-            }
+
+        addToCache();
+    }
+
+    private void addToCache(){
+        getFinishCond().stream().forEach(x -> {
+            if (x.getType() != QuestContent.QUEST_CONTENT_ENTER_DUNGEON) return;
+            GameData.getQuestDungeonMap().computeIfAbsent(x.getParam()[1], s -> new HashMap<>())
+                .put(getSubId(), x.getParam()[0]);
+        });
+        
+        if (getAcceptCond() == null) {
+            Grasscutter.getLogger().warn("missing AcceptConditions for quest {}", getSubId());
+            return;
         }
-        if (toAdd)
-            GameData.getDefaultQuests().add(this.getMainId());        
+        val cacheMap = GameData.getBeginCondQuestMap();
+        if (getAcceptCond().isEmpty()) {
+            val list = cacheMap.computeIfAbsent(QuestData.questConditionKey(QuestCond.QUEST_COND_NONE, 0, null), e -> new ArrayList<>());
+            list.add(this);
+        } else {
+            getAcceptCond().forEach(questCondition -> {
+                if (questCondition.getType() == null) {
+                    Grasscutter.getLogger().warn("null accept type for quest {}", getSubId());
+                    return;
+                }
+                val key = questCondition.asKey();
+                val list = cacheMap.computeIfAbsent(key, e -> new ArrayList<>());
+                list.add(this);
+            });
+        }
     }
 
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public class QuestExecParam {
+    public static class QuestExecParam {
         @SerializedName("_type")
         QuestExec type;
         @SerializedName("_param")

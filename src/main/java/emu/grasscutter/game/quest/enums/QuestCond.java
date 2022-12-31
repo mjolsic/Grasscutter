@@ -18,7 +18,7 @@ public enum QuestCond implements QuestTrigger {
     QUEST_COND_CITY_LEVEL_EQUAL_GREATER (7), // missing, currently unused
     QUEST_COND_ITEM_NUM_LESS_THAN (8),
     QUEST_COND_DAILY_TASK_START (9), // missing
-    QUEST_COND_OPEN_STATE_EQUAL (10), // missing
+    QUEST_COND_OPEN_STATE_EQUAL (10),
     QUEST_COND_DAILY_TASK_OPEN (11), // missing, only NPC groups
     QUEST_COND_DAILY_TASK_REWARD_CAN_GET (12), // missing, only NPC groups/talks
     QUEST_COND_DAILY_TASK_REWARD_RECEIVED (13), // missing, only NPC groups/talks
@@ -29,7 +29,7 @@ public enum QuestCond implements QuestTrigger {
     QUEST_COND_SCENE_AREA_UNLOCKED (18), // missing, only NPC groups/talks
     QUEST_COND_ITEM_GIVING_ACTIVED (19), // missing
     QUEST_COND_ITEM_GIVING_FINISHED (20), // missing
-    QUEST_COND_IS_DAYTIME (21), // missing, only NPC groups
+    QUEST_COND_IS_DAYTIME (21),
     QUEST_COND_CURRENT_AVATAR (22), // missing
     QUEST_COND_CURRENT_AREA (23), // missing
     QUEST_COND_QUEST_VAR_EQUAL (24),
@@ -49,13 +49,13 @@ public enum QuestCond implements QuestTrigger {
     QUEST_COND_COMPLETE_TALK (38),
     QUEST_COND_NOT_HAVE_BLOSSOM_TALK (39), // missing, only NPC groups
     QUEST_COND_IS_CUR_BLOSSOM_TALK (40), // missing, only Blossom groups
-    QUEST_COND_QUEST_NOT_RECEIVE (41), // missing
+    QUEST_COND_QUEST_NOT_RECEIVE (41), // missing, only talks
     QUEST_COND_QUEST_SERVER_COND_VALID (42), // missing, only NPC groups
     QUEST_COND_ACTIVITY_CLIENT_COND (43), // missing, only NPC and Activity groups
     QUEST_COND_QUEST_GLOBAL_VAR_EQUAL (44),
     QUEST_COND_QUEST_GLOBAL_VAR_GREATER (45),
     QUEST_COND_QUEST_GLOBAL_VAR_LESS (46),
-    QUEST_COND_PERSONAL_LINE_UNLOCK (47), // missing
+    QUEST_COND_PERSONAL_LINE_UNLOCK (47),
     QUEST_COND_CITY_REPUTATION_REQUEST (48), // missing
     QUEST_COND_MAIN_COOP_START (49), // missing
     QUEST_COND_MAIN_COOP_ENTER_SAVE_POINT (50), // missing
@@ -77,7 +77,7 @@ public enum QuestCond implements QuestTrigger {
     QUEST_COND_TIME_VAR_PASS_DAY (66), // missing
     QUEST_COND_HOMEWORLD_NPC_NEW_TALK (67), // missing, only NPC groups
     QUEST_COND_PLAYER_CHOOSE_MALE (68), // missing, only talks
-    QUEST_COND_HISTORY_GOT_ANY_ITEM (69), // missing
+    QUEST_COND_HISTORY_GOT_ANY_ITEM (69),
     QUEST_COND_LEARNED_RECIPE (70), // missing, currently unused
     QUEST_COND_LUNARITE_REGION_UNLOCKED (71), // missing, only NPC groups
     QUEST_COND_LUNARITE_HAS_REGION_HINT_COUNT (72), // missing, only NPC groups

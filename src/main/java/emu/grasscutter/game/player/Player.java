@@ -5,8 +5,11 @@ import emu.grasscutter.GameConstants;
 import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.binout.ConfigLevelEntity;
+import emu.grasscutter.data.binout.SceneWorldArea;
+import emu.grasscutter.data.binout.SceneWorldArea.*;
 import emu.grasscutter.data.excels.AvatarData;
 import emu.grasscutter.data.excels.PlayerLevelData;
+import emu.grasscutter.data.excels.TrialAvatarData;
 import emu.grasscutter.data.excels.WeatherData;
 import emu.grasscutter.database.DatabaseHelper;
 import emu.grasscutter.game.Account;
@@ -42,6 +45,7 @@ import emu.grasscutter.game.managers.mapmark.MapMarksManager;
 import emu.grasscutter.game.managers.stamina.StaminaManager;
 import emu.grasscutter.game.props.*;
 import emu.grasscutter.game.quest.QuestManager;
+import emu.grasscutter.game.quest.enums.QuestCond;
 import emu.grasscutter.game.quest.enums.QuestContent;
 import emu.grasscutter.game.shop.ShopLimit;
 import emu.grasscutter.game.tower.TowerData;
@@ -51,6 +55,7 @@ import emu.grasscutter.game.world.World;
 import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.proto.AbilityInvokeEntryOuterClass.AbilityInvokeEntry;
 import emu.grasscutter.net.proto.AttackResultOuterClass.AttackResult;
+import emu.grasscutter.net.proto.AvatarDelNotifyOuterClass.AvatarDelNotify;
 import emu.grasscutter.net.proto.CombatInvokeEntryOuterClass.CombatInvokeEntry;
 import emu.grasscutter.net.proto.GadgetInteractReqOuterClass.GadgetInteractReq;
 import emu.grasscutter.net.proto.MpSettingTypeOuterClass.MpSettingType;
@@ -63,6 +68,7 @@ import emu.grasscutter.net.proto.PropChangeReasonOuterClass.PropChangeReason;
 import emu.grasscutter.net.proto.ShowAvatarInfoOuterClass;
 import emu.grasscutter.net.proto.SocialDetailOuterClass.SocialDetail;
 import emu.grasscutter.net.proto.SocialShowAvatarInfoOuterClass;
+import emu.grasscutter.net.proto.TrialAvatarGrantRecordOuterClass.TrialAvatarGrantRecord.GrantReason;
 import emu.grasscutter.scripts.data.SceneRegion;
 import emu.grasscutter.server.event.player.PlayerJoinEvent;
 import emu.grasscutter.server.event.player.PlayerQuitEvent;
@@ -119,6 +125,7 @@ public class Player {
     @Getter private Set<Integer> nameCardList;
     @Getter private Set<Integer> flyCloakList;
     @Getter private Set<Integer> costumeList;
+    @Getter private Set<Integer> personalLineList;
     @Getter @Setter private Set<Integer> rewardedLevels;
     @Getter @Setter private Set<Integer> realmList;
     @Getter private Set<Integer> unlockedForgingBlueprints;
@@ -133,6 +140,11 @@ public class Player {
     @Getter private Map<Integer, Integer> openStates;
     @Getter @Setter private Map<Integer, Set<Integer>> unlockedSceneAreas;
     @Getter @Setter private Map<Integer, Set<Integer>> unlockedScenePoints;
+    @Getter @Setter private Map<Integer, CityInfoItem> cityLevelMap;
+    @Getter @Setter private Map<Integer, SceneTagInfoItem> sceneTagMap; // might change overtime as game progress so
+    @Getter @Setter private Map<Integer, MapAreaInfoItem> mapAreaInfoMap; // might change overtime as game progress so
+    @Getter @Setter private Map<Integer, DungeonInfoItem> passedDungeon;
+    @Getter @Setter private Map<Integer, WeatherClimateInfoItem> weatherClimateMap; // first integer is sceneid
     @Getter @Setter private List<Integer> chatEmojiIdList;
 
     @Transient private long nextGuid = 0;
@@ -199,9 +211,12 @@ public class Player {
     @Getter @Setter private int lastDailyReset;
     @Getter private transient MpSettingType mpSetting = MpSettingType.MP_SETTING_TYPE_ENTER_AFTER_APPLY;  // TODO
     // keep track of EXEC_ADD_QUEST_PROGRESS count, will be used in CONTENT_ADD_QUEST_PROGRESS
-    // not sure where to put this, this should be saved to DB but not to individual quest, since 
+    // not sure where to put this, this should be saved to DB but not to individual quest, since
     // it will be hard to loop and compare
     @Getter private Map<Integer, Integer> questProgressCountMap;
+    @Getter private transient Map<Integer, Long> sceneBeginTimeMap;
+    @Getter @Setter @Transient private AreaData worldAreaData;
+    @Getter @Transient private boolean weatherClimteUpdated;
 
     @Deprecated
     @SuppressWarnings({"rawtypes", "unchecked"}) // Morphia only!
@@ -231,6 +246,7 @@ public class Player {
         this.nameCardList = new HashSet<>();
         this.flyCloakList = new HashSet<>();
         this.costumeList = new HashSet<>();
+        this.personalLineList = new HashSet<>();
         this.towerData = new TowerData();
         this.collectionRecordStore = new PlayerCollectionRecords();
         this.unlockedForgingBlueprints = new HashSet<>();
@@ -244,6 +260,11 @@ public class Player {
         this.openStates = new HashMap<>();
         this.unlockedSceneAreas = new HashMap<>();
         this.unlockedScenePoints = new HashMap<>();
+        this.cityLevelMap = new HashMap<>();
+        this.sceneTagMap = new HashMap<>();
+        this.mapAreaInfoMap = new HashMap<>();
+        this.passedDungeon = new HashMap<>();
+        this.weatherClimateMap = new HashMap<>();
         this.chatEmojiIdList = new ArrayList<>();
 
         this.attackResults = new LinkedBlockingQueue<>();
@@ -271,6 +292,7 @@ public class Player {
         this.cookingManager = new CookingManager(this);
         this.cookingCompoundManager=new CookingCompoundManager(this);
         this.questProgressCountMap = new HashMap<>();
+        this.sceneBeginTimeMap = new HashMap<>();
     }
 
     // On player creation
@@ -351,9 +373,81 @@ public class Player {
         this.scene = scene;
     }
 
+    public boolean hasSceneLocked(int sceneId) {
+        return getUnlockedSceneAreas().get(sceneId).isEmpty();
+    }
+
+    public void initSceneTag() {
+        if (!getSceneTagMap().isEmpty()) return;
+
+        getUnlockedSceneAreas().keySet().forEach(k -> {
+            if (getSceneTagMap().get(k) == null && !GameData.getDefaultSceneTag(k).isEmpty())
+            getSceneTagMap().computeIfAbsent(k, s -> SceneTagInfoItem.create(k, GameData.getDefaultSceneTag(k), hasSceneLocked(k)));
+        });
+    }
+
+    public SceneTagInfoItem getSceneTag() {
+        return getSceneTag(getSceneId());
+    }
+
+    public SceneTagInfoItem getSceneTag(int sceneId) {
+        return getSceneTagMap().computeIfAbsent(sceneId, s -> SceneTagInfoItem.create(sceneId, Set.of(), true));
+    }
+
+    public Long getSceneBeginTime() {
+        return getSceneBeginTimeMap().computeIfAbsent(getSceneId(), s -> System.currentTimeMillis());
+    }
+
+    public DungeonInfoItem recordPlotDungeon(int subQuestId, int dungeonId) {
+        return getPassedDungeon().computeIfAbsent(subQuestId, s -> DungeonInfoItem.create(dungeonId));
+    }
+
+    public DungeonInfoItem getPlotDungeon(int dungeonId, boolean isFinished) {
+        return getPassedDungeon().values().stream()
+            .filter(x -> x.isPassed() == isFinished && x.getDungeonId() == dungeonId)
+            .findFirst()
+            .orElse(null);   
+    }
+
+    public void setWorldArea() {
+        if (GameData.getSceneLevel2AreaMap().get(getSceneId()) == null) {
+            setWorldAreaData(null);
+            return;
+        }
+
+        setWorldAreaData(GameData.getSceneLevel2AreaMap().get(getSceneId()).stream()
+            .filter(x -> getPosition().isWithinArea(x.getPolygonData().getMinArea(), x.getPolygonData().getMaxArea()))
+            .findFirst().orElse(null));
+    }
+
+    public boolean stillInArea() {
+        return getWorldAreaData() != null && getPosition().isWithinArea(
+                getWorldAreaData().getPolygonData().getMinArea(), 
+                getWorldAreaData().getPolygonData().getMaxArea());
+    }
+
+    public void updateSceneWorldArea() {
+        if (stillInArea()) return;
+
+        AreaData prevArea = getWorldAreaData();
+        setWorldArea();
+        if (prevArea != getWorldAreaData()) sendPacket(new PacketSceneAreaWeatherNotify(this));
+    }
+
+    public WeatherClimateInfoItem.WeatherClimate getCurrentWeatherClimate() {
+        // TODO, default weather might have different area id for different scene
+        if (getWorldAreaData() == null) {
+            return WeatherClimateInfoItem.WeatherClimate.create(
+                GameData.getSceneLevel2AreaMap().get(getSceneId()) == null ? 0 : 1, ClimateType.CLIMATE_NONE);
+        }
+        return getWeatherClimateMap().computeIfAbsent(getSceneId(), s -> WeatherClimateInfoItem.create())
+            .getWeatherClimate().computeIfAbsent(getWorldAreaData().getId1() + getWorldAreaData().getId2(), 
+                x -> WeatherClimateInfoItem.WeatherClimate.create(1, ClimateType.CLIMATE_NONE));
+    }
+
     synchronized public void setClimate(ClimateType climate) {
         this.climate = climate;
-        this.session.send(new PacketSceneAreaWeatherNotify(this));
+        this.session.send(new PacketSceneAreaWeatherNotify(this.weatherId, this.climate.getValue()));
     }
 
     synchronized public void setWeather(int weather) {
@@ -370,7 +464,7 @@ public class Player {
         }
         this.weatherId = weatherId;
         this.climate = climate;
-        this.session.send(new PacketSceneAreaWeatherNotify(this));
+        this.session.send(new PacketSceneAreaWeatherNotify(this.weatherId, this.climate.getValue()));
     }
 
     public void setNickname(String nickName) {
@@ -434,6 +528,7 @@ public class Player {
             // Handle open state unlocks from level-up.
             this.getProgressManager().tryUnlockOpenStates();
             this.getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_PLAYER_LEVEL_UP, level);
+            this.getQuestManager().queueEvent(QuestCond.QUEST_COND_PLAYER_LEVEL_EQUAL_GREATER, level);
 
             return true;
         }
@@ -802,6 +897,55 @@ public class Player {
         addAvatar(new Avatar(avatarId), true);
     }
 
+    public synchronized boolean addTrialAvatarForQuest(int trialAvatarId, GrantReason reason, int questMainId){
+        // TODO, other trial avatar like activity and element trial dungeon might have 
+        // completely different scenario, this function is currently used for Quest Exec only
+        TrialAvatarData trialAvatar = GameData.getTrialAvatarDataMap().get(trialAvatarId);
+        if (trialAvatar == null) return false;
+
+        List<Integer> trialParams = trialAvatar.getTrialAvatarParamList();
+        if (trialParams == null || trialParams.size() < 2) return false;
+
+        Avatar avatar = new Avatar(trialParams.get(0));
+        if (avatar.getAvatarData() == null || !hasSentLoginPackets()) return false;
+
+        avatar.setOwner(this);
+        // Add trial weapons and relics
+        avatar.setTrialAvatarInfo(trialAvatar, reason, questMainId);
+        avatar.equipTrialItems();
+        // Recalc stats
+        avatar.recalcStats();
+
+        // Packet, mimic official server behaviour, add to player's bag but not saving to db
+        sendPacket(new PacketAvatarAddNotify(avatar, false));
+        // add to avatar to temporary trial team
+        getTeamManager().addAvatarToTrialTeam(avatar);
+        // Packet, mimic official server behaviour, neccessary to stop player from modifying team 
+        sendPacket(new PacketAvatarTeamUpdateNotify(this));
+        return true;
+    }
+
+    public synchronized boolean removeTrialAvatar(int trialAvatarId){
+        boolean inTeam = getTeamManager().trialAvatarInTeam(trialAvatarId);
+        if (!inTeam) return false;
+
+        TrialAvatarData trialAvatar = GameData.getTrialAvatarDataMap().get(trialAvatarId);
+        if (trialAvatar == null) return false;
+
+        List<Integer> trialParams = trialAvatar.getTrialAvatarParamList();
+        if (trialParams == null || trialParams.size() < 2 
+            || getTeamManager().getTrialTeamGuid().get(trialParams.get(0)) == null) return false;
+
+        // Packet, mimic official server behaviour
+        sendPacket(new PacketAvatarDelNotify(List.of(getTeamManager().getTrialTeamGuid().get(trialParams.get(0)))));
+        // Reset temporary trial team
+        getTeamManager().removeAvatarFromTrialTeam(trialParams.get(0), trialAvatarId);
+        
+        // Packet, mimic official server behaviour, necessary to unlock team modifying
+        sendPacket(new PacketAvatarTeamUpdateNotify());
+        return true;
+    }
+
     public void addFlycloak(int flycloakId) {
         this.getFlyCloakList().add(flycloakId);
         this.sendPacket(new PacketAvatarGainFlycloakNotify(flycloakId));
@@ -810,6 +954,11 @@ public class Player {
     public void addCostume(int costumeId) {
         this.getCostumeList().add(costumeId);
         this.sendPacket(new PacketAvatarGainCostumeNotify(costumeId));
+    }
+
+    public void addPersonalLine(int personalLineId) {
+        this.getPersonalLineList().add(personalLineId);
+        session.getPlayer().getQuestManager().queueEvent(QuestCond.QUEST_COND_PERSONAL_LINE_UNLOCK, personalLineId);
     }
 
     public void addNameCard(int nameCardId) {
@@ -1133,6 +1282,10 @@ public class Player {
 
         // Recharge resin.
         this.getResinManager().rechargeResin();
+
+        getQuestManager().queueEvent(QuestCond.QUEST_COND_IS_DAYTIME, (getScene().getTime() / 60) >= 6 && (getScene().getTime() / 60) <= 19 ? 1 : 0);
+        getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_GAME_TIME_TICK, String.valueOf(getScene().getTime() / 60), (getScene().getTime() / 60) >= 6 && (getScene().getTime() / 60) <= 19 ? 1 : 0);
+        updateSceneWorldArea();
     }
 
     private synchronized void doDailyReset() {
@@ -1235,10 +1388,10 @@ public class Player {
         session.send(new PacketAvatarDataNotify(this));
 
         this.getProgressManager().onPlayerLogin();
-
         session.send(new PacketFinishedParentQuestNotify(this));
-        session.send(new PacketBattlePassAllDataNotify(this));
         session.send(new PacketQuestListNotify(this));
+        session.send(new PacketQuestGlobalVarNotify(this));
+        session.send(new PacketBattlePassAllDataNotify(this));
         session.send(new PacketCodexDataFullNotify(this));
         session.send(new PacketAllWidgetDataNotify(this));
         session.send(new PacketWidgetGadgetAllDataNotify());

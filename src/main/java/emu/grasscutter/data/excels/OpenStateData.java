@@ -24,7 +24,7 @@ public class OpenStateData extends GameResource {
         @Getter private int param2;
     }
 
-    public static enum OpenStateCondType {
+    public enum OpenStateCondType {
         OPEN_STATE_COND_PLAYER_LEVEL,
         OPEN_STATE_COND_QUEST,
         OPEN_STATE_OFFERING_LEVEL,

@@ -45,11 +45,11 @@ public final class QuestCreateEntityRspOuterClass {
      * <code>.CreateEntityInfo entity = 11;</code>
      * @return The entity.
      */
-    org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity();
+    emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity();
     /**
      * <code>.CreateEntityInfo entity = 11;</code>
      */
-    org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder();
+    emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder();
 
     /**
      * <code>uint32 parent_quest_id = 1;</code>
@@ -130,11 +130,11 @@ public final class QuestCreateEntityRspOuterClass {
               break;
             }
             case 90: {
-              org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder subBuilder = null;
+              emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder subBuilder = null;
               if (entity_ != null) {
                 subBuilder = entity_.toBuilder();
               }
-              entity_ = input.readMessage(org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.parser(), extensionRegistry);
+              entity_ = input.readMessage(emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(entity_);
                 entity_ = subBuilder.buildPartial();
@@ -218,7 +218,7 @@ public final class QuestCreateEntityRspOuterClass {
     }
 
     public static final int ENTITY_FIELD_NUMBER = 11;
-    private org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo entity_;
+    private emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo entity_;
     /**
      * <code>.CreateEntityInfo entity = 11;</code>
      * @return Whether the entity field is set.
@@ -232,14 +232,14 @@ public final class QuestCreateEntityRspOuterClass {
      * @return The entity.
      */
     @java.lang.Override
-    public org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity() {
-      return entity_ == null ? org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
+    public emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity() {
+      return entity_ == null ? emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
     }
     /**
      * <code>.CreateEntityInfo entity = 11;</code>
      */
     @java.lang.Override
-    public org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder() {
+    public emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder() {
       return getEntity();
     }
 
@@ -765,9 +765,9 @@ public final class QuestCreateEntityRspOuterClass {
         return this;
       }
 
-      private org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo entity_;
+      private emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo entity_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder> entityBuilder_;
+          emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder> entityBuilder_;
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        * @return Whether the entity field is set.
@@ -779,9 +779,9 @@ public final class QuestCreateEntityRspOuterClass {
        * <code>.CreateEntityInfo entity = 11;</code>
        * @return The entity.
        */
-      public org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity() {
+      public emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo getEntity() {
         if (entityBuilder_ == null) {
-          return entity_ == null ? org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
+          return entity_ == null ? emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
         } else {
           return entityBuilder_.getMessage();
         }
@@ -789,7 +789,7 @@ public final class QuestCreateEntityRspOuterClass {
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        */
-      public Builder setEntity(org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo value) {
+      public Builder setEntity(emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo value) {
         if (entityBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -806,7 +806,7 @@ public final class QuestCreateEntityRspOuterClass {
        * <code>.CreateEntityInfo entity = 11;</code>
        */
       public Builder setEntity(
-          org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder builderForValue) {
+          emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder builderForValue) {
         if (entityBuilder_ == null) {
           entity_ = builderForValue.build();
           onChanged();
@@ -819,11 +819,11 @@ public final class QuestCreateEntityRspOuterClass {
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        */
-      public Builder mergeEntity(org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo value) {
+      public Builder mergeEntity(emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo value) {
         if (entityBuilder_ == null) {
           if (entity_ != null) {
             entity_ =
-              org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.newBuilder(entity_).mergeFrom(value).buildPartial();
+              emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.newBuilder(entity_).mergeFrom(value).buildPartial();
           } else {
             entity_ = value;
           }
@@ -851,7 +851,7 @@ public final class QuestCreateEntityRspOuterClass {
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        */
-      public org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder getEntityBuilder() {
+      public emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder getEntityBuilder() {
         
         onChanged();
         return getEntityFieldBuilder().getBuilder();
@@ -859,23 +859,23 @@ public final class QuestCreateEntityRspOuterClass {
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        */
-      public org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder() {
+      public emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder getEntityOrBuilder() {
         if (entityBuilder_ != null) {
           return entityBuilder_.getMessageOrBuilder();
         } else {
           return entity_ == null ?
-              org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
+              emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.getDefaultInstance() : entity_;
         }
       }
       /**
        * <code>.CreateEntityInfo entity = 11;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder> 
+          emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder> 
           getEntityFieldBuilder() {
         if (entityBuilder_ == null) {
           entityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, org.sorapointa.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder>(
+              emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfo.Builder, emu.grasscutter.net.proto.CreateEntityInfoOuterClass.CreateEntityInfoOrBuilder>(
                   getEntity(),
                   getParentForChildren(),
                   isClean());
@@ -1023,7 +1023,7 @@ public final class QuestCreateEntityRspOuterClass {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.sorapointa.proto.CreateEntityInfoOuterClass.getDescriptor(),
+          emu.grasscutter.net.proto.CreateEntityInfoOuterClass.getDescriptor(),
         });
     internal_static_QuestCreateEntityRsp_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -1031,7 +1031,7 @@ public final class QuestCreateEntityRspOuterClass {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_QuestCreateEntityRsp_descriptor,
         new java.lang.String[] { "QuestId", "Retcode", "EntityId", "Entity", "ParentQuestId", "IsRewind", });
-    org.sorapointa.proto.CreateEntityInfoOuterClass.getDescriptor();
+    emu.grasscutter.net.proto.CreateEntityInfoOuterClass.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -1,12 +1,10 @@
 package emu.grasscutter.game.dungeons.challenge;
 
-import emu.grasscutter.game.dungeons.DungeonPassConditionType;
+import emu.grasscutter.game.dungeons.enums.DungeonPassConditionType;
 import emu.grasscutter.game.dungeons.challenge.trigger.ChallengeTrigger;
-import emu.grasscutter.game.props.WatcherTriggerType;
 import emu.grasscutter.game.world.Scene;
-import emu.grasscutter.scripts.constants.EventType;
 import emu.grasscutter.scripts.data.SceneGroup;
-import emu.grasscutter.scripts.data.ScriptArgs;
+
 import java.util.List;
 
 public class DungeonChallenge extends WorldChallenge {
@@ -38,7 +36,7 @@ public class DungeonChallenge extends WorldChallenge {
         getScene().triggerDungeonEvent(DungeonPassConditionType.DUNGEON_COND_FINISH_CHALLENGE, getChallengeId(), getChallengeIndex());
         if (this.isSuccess()) {
             // Settle
-            settle();
+            // settle(); // shouldn't dungeon manager handle this already?
         }
     }
 

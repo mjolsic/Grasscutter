@@ -1,6 +1,8 @@
 package emu.grasscutter.scripts;
 
 import emu.grasscutter.Grasscutter;
+import emu.grasscutter.game.dungeons.challenge.enums.ChallengeEventMarkType;
+import emu.grasscutter.game.dungeons.challenge.enums.FatherChallengeProperty;
 import emu.grasscutter.game.props.EntityType;
 import emu.grasscutter.game.quest.enums.QuestState;
 import emu.grasscutter.scripts.constants.*;
@@ -70,6 +72,8 @@ public class ScriptLoader {
 
         addEnumByOrdinal(ctx, GroupKillPolicy.values(), "GroupKillPolicy");
         addEnumByOrdinal(ctx, SealBattleType.values(), "SealBattleType");
+        addEnumByOrdinal(ctx, FatherChallengeProperty.values(), "FatherChallengeProperty");
+        addEnumByOrdinal(ctx, ChallengeEventMarkType.values(), "ChallengeEventMarkType");
 
         ctx.globals.set("EventType", CoerceJavaToLua.coerce(new EventType())); // TODO - make static class to avoid instantiating a new class every scene
         ctx.globals.set("GadgetState", CoerceJavaToLua.coerce(new ScriptGadgetState()));

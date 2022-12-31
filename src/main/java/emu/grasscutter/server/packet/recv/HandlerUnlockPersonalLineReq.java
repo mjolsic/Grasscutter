@@ -1,6 +1,7 @@
 package emu.grasscutter.server.packet.recv;
 
 import emu.grasscutter.data.GameData;
+import emu.grasscutter.game.quest.enums.QuestCond;
 import emu.grasscutter.net.packet.Opcodes;
 import emu.grasscutter.net.packet.PacketHandler;
 import emu.grasscutter.net.packet.PacketOpcodes;
@@ -19,7 +20,7 @@ public class HandlerUnlockPersonalLineReq extends PacketHandler {
             return;
         }
 
-        session.getPlayer().getQuestManager().addQuest(data.getStartQuestId());
+        session.getPlayer().addPersonalLine(data.getId());
         session.getPlayer().useLegendaryKey(1);
 
         session.send(new PacketUnlockPersonalLineRsp(data.getId(), 1, data.getChapterId()));

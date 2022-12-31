@@ -1,17 +1,22 @@
 package emu.grasscutter.scripts;
 
 import emu.grasscutter.Grasscutter;
+import emu.grasscutter.data.GameData;
 import emu.grasscutter.game.activity.ActivityManager;
 import emu.grasscutter.game.dungeons.challenge.DungeonChallenge;
+import emu.grasscutter.game.dungeons.challenge.enums.FatherChallengeProperty;
 import emu.grasscutter.game.dungeons.challenge.factory.ChallengeFactory;
 import emu.grasscutter.game.entity.*;
 import emu.grasscutter.game.entity.gadget.GadgetWorktop;
+import emu.grasscutter.game.entity.gadget.platform.ConfigRoute;
+import emu.grasscutter.game.entity.gadget.platform.PointArrayRoute;
 import emu.grasscutter.game.props.ClimateType;
 import emu.grasscutter.game.props.EntityType;
 import emu.grasscutter.game.quest.enums.QuestCond;
 import emu.grasscutter.game.quest.enums.QuestContent;
 import emu.grasscutter.game.quest.enums.QuestState;
 import emu.grasscutter.net.proto.EnterTypeOuterClass;
+import emu.grasscutter.scripts.constants.EventType;
 import emu.grasscutter.scripts.constants.GroupKillPolicy;
 import emu.grasscutter.scripts.data.SceneGroup;
 import emu.grasscutter.scripts.data.SceneObject;
@@ -76,33 +81,29 @@ public class ScriptLib {
 	public void removeCurrentGroup(){
 		this.currentGroup.remove();
 	}
+
 	public int SetGadgetStateByConfigId(int configId, int gadgetState) {
 		logger.debug("[LUA] Call SetGadgetStateByConfigId with {},{}",
 				configId,gadgetState);
-		Optional<GameEntity> entity = getSceneScriptManager().getScene().getEntities().values().stream()
-				.filter(e -> e.getConfigId() == configId).findFirst();
+		GameEntity entity = getSceneScriptManager().getScene().getEntityByConfigId(configId);
 
-		if (entity.isEmpty()) {
+		if (!(entity instanceof EntityGadget)) {
 			return 1;
 		}
 
-		if (entity.get() instanceof EntityGadget entityGadget) {
-			entityGadget.updateState(gadgetState);
-			return 0;
-		}
-
-		return 1;
+        ((EntityGadget) entity).updateState(gadgetState);
+        return 0;
 	}
 
 	public int SetGroupGadgetStateByConfigId(int groupId, int configId, int gadgetState) {
 		logger.debug("[LUA] Call SetGroupGadgetStateByConfigId with {},{},{}",
 				groupId,configId,gadgetState);
 
-		getSceneScriptManager().getScene().getEntities().values().stream()
-				.filter(e -> e.getGroupId() == groupId)
-				.filter(e -> e instanceof EntityGadget)
-				.map(e -> (EntityGadget)e)
-				.forEach(e -> e.updateState(gadgetState));
+		val entity = getSceneScriptManager().getScene().getEntityByConfigId(configId, groupId);
+        if(!(entity instanceof EntityGadget)){
+            return -1;
+        }
+        ((EntityGadget) entity).updateState(gadgetState);
 
 		return 0;
 	}
@@ -111,16 +112,14 @@ public class ScriptLib {
 		logger.debug("[LUA] Call SetWorktopOptionsByGroupId with {},{},{}",
 				groupId,configId,options);
 
-		Optional<GameEntity> entity = getSceneScriptManager().getScene().getEntities().values().stream()
-				.filter(e -> e.getConfigId() == configId && e.getGroupId() == groupId).findFirst();
+        val entity = getSceneScriptManager().getScene().getEntityByConfigId(configId, groupId);
 
-
-		if (entity.isEmpty() || !(entity.get() instanceof EntityGadget gadget)) {
+		if (!(entity instanceof EntityGadget gadget)) {
 			return 1;
 		}
 
 		if (!(gadget.getContent() instanceof GadgetWorktop worktop)) {
-			return 1;
+			return 2;
 		}
 
 		worktop.addWorktopOptions(options);
@@ -163,10 +162,10 @@ public class ScriptLib {
 	public int DelWorktopOptionByGroupId(int groupId, int configId, int option) {
 		logger.debug("[LUA] Call DelWorktopOptionByGroupId with {},{},{}",groupId,configId,option);
 
-		Optional<GameEntity> entity = getSceneScriptManager().getScene().getEntities().values().stream()
-				.filter(e -> e.getConfigId() == configId && e.getGroupId() == groupId).findFirst();
 
-		if (entity.isEmpty() || !(entity.get() instanceof EntityGadget gadget)) {
+        val entity = getSceneScriptManager().getScene().getEntityByConfigId(configId, groupId);
+
+		if (!(entity instanceof EntityGadget gadget)) {
 			return 1;
 		}
 
@@ -370,15 +369,21 @@ public class ScriptLib {
 	public int SetGroupVariableValue(String var, int value) {
 		logger.debug("[LUA] Call SetGroupVariableValue with {},{}",
 				var, value);
+
+        val old = getSceneScriptManager().getVariables().getOrDefault(var, value);
 		getSceneScriptManager().getVariables().put(var, value);
+        getSceneScriptManager().callEvent(new ScriptArgs(EventType.EVENT_VARIABLE_CHANGE, value, old));
 		return 0;
 	}
 
 	public LuaValue ChangeGroupVariableValue(String var, int value) {
 		logger.debug("[LUA] Call ChangeGroupVariableValue with {},{}",
 				var, value);
-
-		getSceneScriptManager().getVariables().put(var, getSceneScriptManager().getVariables().get(var) + value);
+        val old = getSceneScriptManager().getVariables().getOrDefault(var, 0);
+		getSceneScriptManager().getVariables().put(var, old + value);
+        logger.debug("[LUA] Call ChangeGroupVariableValue with {},{}",
+            old, old+value);
+        getSceneScriptManager().callEvent(new ScriptArgs(EventType.EVENT_VARIABLE_CHANGE, old+value, old));
 		return LuaValue.ZERO;
 	}
 
@@ -586,18 +591,12 @@ public class ScriptLib {
 		logger.debug("[LUA] Call GetGadgetStateByConfigId with {},{}",
 				groupId, configId);
 
-		if(groupId == 0){
-			groupId = getCurrentGroup().get().id;
-		}
-		final int realGroupId = groupId;
-		var gadget = getSceneScriptManager().getScene().getEntities().values().stream()
-				.filter(g -> g instanceof EntityGadget entityGadget && entityGadget.getGroupId() == realGroupId)
-				.filter(g -> g.getConfigId() == configId)
-				.findFirst();
-		if(gadget.isEmpty()){
-			return 1;
-		}
-		return ((EntityGadget)gadget.get()).getState();
+        val scene = getSceneScriptManager().getScene();
+        val gadget = groupId == 0 ? scene.getEntityByConfigId(configId) : scene.getEntityByConfigId(configId, groupId);
+        if(!(gadget instanceof EntityGadget)){
+            return -1;
+        }
+        return ((EntityGadget)gadget).getState();
 	}
 
 	public int MarkPlayerAction(int var1, int var2, int var3){
@@ -651,9 +650,9 @@ public class ScriptLib {
     }
 
     public int GetQuestState(int entityId, int questId){
-        var player = getSceneScriptManager().getScene().getWorld().getHost();
+        val player = getSceneScriptManager().getScene().getWorld().getHost();
 
-        var quest = player.getQuestManager().getQuestById(questId);
+        val quest = player.getQuestManager().getQuestById(questId);
         if(quest == null){
             return QuestState.QUEST_STATE_NONE.getValue();
         }
@@ -669,17 +668,13 @@ public class ScriptLib {
     public int RemoveEntityByConfigId(int groupId, int entityType, int configId){
         logger.debug("[LUA] Call RemoveEntityByConfigId");
 
-        var entity = getSceneScriptManager().getScene().getEntities().values().stream()
-            .filter(e -> e.getGroupId() == groupId)
-            .filter(e -> e.getEntityType() == entityType)
-            .filter(e -> e.getConfigId() == configId)
-            .findFirst();
+        val entity = getSceneScriptManager().getScene().getEntityByConfigId(configId, groupId);
 
-        if(entity.isEmpty()){
+        if(entity == null || entity.getEntityType() != entityType){
             return 1;
         }
 
-        getSceneScriptManager().getScene().removeEntity(entity.get());
+        getSceneScriptManager().getScene().removeEntity(entity);
 
         return 0;
     }
@@ -782,6 +777,12 @@ public class ScriptLib {
         //TODO implement
         return 0;
     }
+    public int ModifyFatherChallengeProperty(int challengeId, int propertyTypeIndex, int value){
+        val propertyType = FatherChallengeProperty.values()[propertyTypeIndex];
+        logger.warn("[LUA] Call unimplemented ModifyFatherChallengeProperty with {} {} {}", challengeId, propertyType.name(), value);
+        //TODO implement
+        return 0;
+    }
     public int AttachChildChallenge(int var1, int var2, int var3, int[] var4, LuaTable var5, LuaTable var6){
         logger.warn("[LUA] Call unimplemented AttachChildChallenge with {} {} {} {} {} {}", var1, var2, var3, var4, var5, var6);
         //TODO implement var6 object has int success, int fail, bool fail_on_wipe
@@ -845,11 +846,6 @@ public class ScriptLib {
     public int GetGroupTempValue(String name, LuaTable var2){
         logger.warn("[LUA] Call unimplemented GetGroupTempValue with {} {}", name, printTable(var2));
         //TODO implement var3 has int group_id
-        return 0;
-    }
-    public int SetPlatformPointArray(int var1, int var2, int[] var3, LuaTable var4){
-        logger.warn("[LUA] Call unimplemented SetPlatformPointArray with {} {} {} {}", var1, var2, var3, printTable(var4));
-        //TODO implement var4 has int route_type, bool turn_mode
         return 0;
     }
 
@@ -1027,9 +1023,19 @@ public class ScriptLib {
         return 0;
     }
 
-    public int ScenePlaySound(LuaTable var1){
-        logger.warn("[LUA] Call unimplemented ScenePlaySound with {}", printTable(var1));
-        //TODO implement var1 contains Position play_pos, string sound_name, int play_type, bool is_broadcast
+    public int ScenePlaySound(LuaTable soundInfo){
+        logger.debug("[LUA] Call unimplemented ScenePlaySound with {}", printTable(soundInfo));
+
+        val luaSoundName = soundInfo.get("sound_name");
+        val luaIsBroadcast = soundInfo.get("is_broadcast");
+        val luaPlayPosition = soundInfo.get("play_pos");
+        val luaPlayType = soundInfo.get("play_type");
+
+        val soundName = luaSoundName.optjstring(null);
+        val isBroadcast = luaIsBroadcast.optboolean(true);
+        val playPosition = luaToPos(luaPlayPosition);
+        val playType = luaPlayType.optint(0); // TODO
+        sceneScriptManager.get().getScene().broadcastPacket(new PacketScenePlayerSoundNotify(playPosition, soundName, playType));
         return 0;
     }
 
@@ -1080,14 +1086,27 @@ public class ScriptLib {
         return 0;
     }
 
-    public int ShowReminderRadius(int var1, LuaTable var2, int var3){
-        logger.warn("[LUA] Call unimplemented ShowReminderRadius with {} {} {}", var1, printTable(var2), var3);
-        //TODO implement var2 is a postion
+    public int ShowReminderRadius(int reminderId, LuaTable reminderPos, int radius){
+        logger.debug("[LUA] Call ShowReminderRadius with {} {} {}", reminderId, printTable(reminderPos), radius);
+        val pos = luaToPos(reminderPos);
+        // TODO check
+        getSceneScriptManager().getScene().getPlayers().forEach(p -> {
+            if (p.getPosition().computeDistance(pos) > radius) return;
+            getSceneScriptManager().getScene().broadcastPacket(new PacketDungeonShowReminderNotify(reminderId));
+        });
         return 0;
     }
-    public int ShowClientGuide(String var1){
-        logger.warn("[LUA] Call unimplemented ShowClientGuide with {}", var1);
-        //TODO implement
+    public int ShowClientGuide(String guideName){
+        logger.debug("[LUA] Call ShowClientGuide with {}", guideName);
+        // TODO check
+        if (GameData.getGuideTriggerDataStringMap().get(guideName) != null) {
+            // if should handle by open state, dont send packet here
+            // not entirely sure what return value is about
+            // probably not needing this check statement here since the value comes from 
+            // the lua script
+            return 1;
+        }
+        sceneScriptManager.get().getScene().broadcastPacket(new PacketShowClientGuideNotify(guideName));
         return 0;
     }
 
@@ -1100,35 +1119,104 @@ public class ScriptLib {
         return dungeonManager.activateRespawnPoint(var1) ? 0:2;
     }
 
+    //TODO check
     public int SetWeatherAreaState(int var1, int var2){
         logger.warn("[LUA] Call unimplemented SetWeatherAreaState with {} {}", var1, var2);
-        //TODO check
         getSceneScriptManager().getScene().getPlayers().forEach(p -> p.setWeather(var1, ClimateType.getTypeByValue(var2)));
         return 0;
     }
 
+    //TODO check
     public boolean CheckIsInMpMode(){
         logger.debug("[LUA] Call CheckIsInMpMode");
-        //TODO check
         return getSceneScriptManager().getScene().getWorld().isMultiplayer();
     }
 
+    /**
+     * TODO properly implement
+     * var3 might contain the next point, sometimes is a single int, sometimes multiple ints as array
+     * var4 has RouteType route_type, bool turn_mode
+     */
+    public int SetPlatformPointArray(int entityConfigId, int pointArrayId, int[] var3, LuaTable var4){
+        logger.warn("[LUA] Call unimplemented SetPlatformPointArray with {} {} {} {}", entityConfigId, pointArrayId, var3, printTable(var4));
+
+        val entity = getSceneScriptManager().getScene().getEntityByConfigId(entityConfigId);
+        if(entity == null){
+            return 1;
+        }
+        if(!(entity instanceof EntityGadget entityGadget)){
+            return 2; //todo maybe also check the gadget type?
+        }
+
+        var routeConfig = entityGadget.getRouteConfig();
+        if(!(routeConfig instanceof PointArrayRoute)){
+            routeConfig = new PointArrayRoute((entityGadget).getMetaGadget());
+            entityGadget.setRouteConfig(routeConfig);
+        }
+
+        val configRoute = (PointArrayRoute) routeConfig;
+        //TODO also check targetPoint/targetPoints
+        if(configRoute.getPointArrayId() == pointArrayId){
+            return -1;
+        }
+
+        configRoute.setPointArrayId(pointArrayId);
+        //TODO also set targetPoint/targetPoints
+        sceneScriptManager.get().getScene().broadcastPacket(new PacketPlatformChangeRouteNotify(entityGadget));
+
+        return -1;
+    }
+
+    //TODO check
     public int SetPlatformRouteId(int entityConfigId, int routeId){
-        logger.warn("[LUA] Call unimplemented SetPlatformRouteId {} {}", entityConfigId, routeId);
-        //TODO implement
-        // e.g. scene3_group133003381.lua action_EVENT_ENTER_REGION_381007 line 387
-        // or scene3_group133001159.lua action_EVENT_ENTER_REGION_159007 line 387
+        logger.info("[LUA] Call SetPlatformRouteId {} {}", entityConfigId, routeId);
+
+        val entity = getSceneScriptManager().getScene().getEntityByConfigId(entityConfigId);
+        if(entity == null){
+            return 1;
+        }
+        if(!(entity instanceof EntityGadget entityGadget)){
+            return 2; //todo maybe also check the gadget type?
+        }
+
+        var routeConfig = entityGadget.getRouteConfig();
+        if(!(routeConfig instanceof ConfigRoute)){
+            routeConfig = new ConfigRoute((entityGadget).getMetaGadget());
+            entityGadget.setRouteConfig(routeConfig);
+        }
+
+        val configRoute = (ConfigRoute) routeConfig;
+        if(configRoute.getRouteId() == routeId){
+            return 0;
+        }
+
+        configRoute.setRouteId(routeId);
+        sceneScriptManager.get().getScene().broadcastPacket(new PacketPlatformChangeRouteNotify(entityGadget));
         return 0;
     }
 
+    //TODO check
     public int StartPlatform(int configId){
-        logger.warn("[LUA] Call unimplemented StartPlatform {} ", configId);
-        return 1;
+        logger.info("[LUA] Call StartPlatform {} ", configId);
+
+        val entity = sceneScriptManager.get().getScene().getEntityByConfigId(configId);
+
+        if(!(entity instanceof EntityGadget entityGadget)) {
+            return 1;
+        }
+
+        return entityGadget.startPlatform() ? 0 : 2;
     }
 
+    //TODO check
     public int StopPlatform(int configId){
-        logger.warn("[LUA] Call unimplemented StopPlatform {} ", configId);
-        return 1;
+        logger.info("[LUA] Call StopPlatform {} ", configId);
+        val entity = sceneScriptManager.get().getScene().getEntityByConfigId(configId);
+        if(!(entity instanceof EntityGadget entityGadget)) {
+            return 1;
+        }
+
+        return entityGadget.stopPlatform() ? 0 : 2;
     }
 
     public int CreateChannellerSlabCampRewardGadget(int configId){
@@ -1149,13 +1237,13 @@ public class ScriptLib {
     }
 
     public int UnlockForce(int force){
-        logger.info("[LUA] Call UnlockForce {}", force);
+        logger.debug("[LUA] Call UnlockForce {}", force);
         getSceneScriptManager().getScene().unlockForce(force);
         return 0;
     }
 
     public int LockForce(int force){
-        logger.info("[LUA] Call LockForce {}", force);
+        logger.debug("[LUA] Call LockForce {}", force);
         getSceneScriptManager().getScene().lockForce(force);
         return 0;
     }

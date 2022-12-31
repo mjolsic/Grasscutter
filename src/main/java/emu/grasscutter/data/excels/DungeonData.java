@@ -3,8 +3,7 @@ package emu.grasscutter.data.excels;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
-import emu.grasscutter.game.dungeons.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import emu.grasscutter.game.dungeons.enums.*;
 import lombok.Getter;
 
 import java.util.List;
@@ -30,6 +29,8 @@ public class DungeonData extends GameResource {
     @Getter private int statueCostCount;
 
     @Getter private RewardPreviewData rewardPreviewData;
+    @Getter private String entryPicPath;
+    @Getter private List<Integer> enterCostItems;
 
 	@Override
 	public int getId() {

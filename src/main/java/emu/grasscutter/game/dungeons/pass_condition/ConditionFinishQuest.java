@@ -1,7 +1,7 @@
 package emu.grasscutter.game.dungeons.pass_condition;
 
 import emu.grasscutter.data.excels.DungeonPassConfigData;
-import emu.grasscutter.game.dungeons.DungeonPassConditionType;
+import emu.grasscutter.game.dungeons.enums.DungeonPassConditionType;
 import emu.grasscutter.game.dungeons.DungeonValue;
 import emu.grasscutter.game.dungeons.handlers.DungeonBaseHandler;
 

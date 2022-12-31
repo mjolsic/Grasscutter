@@ -7,6 +7,7 @@ import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.excels.MonsterData;
 import emu.grasscutter.data.excels.WorldLevelData;
 import emu.grasscutter.game.entity.*;
+import emu.grasscutter.game.entity.gadget.platform.BaseRoute;
 import emu.grasscutter.game.props.EntityType;
 import emu.grasscutter.game.world.Scene;
 import emu.grasscutter.net.proto.VisionTypeOuterClass;
@@ -498,6 +499,7 @@ public class SceneScriptManager {
         entity.getRotation().set(g.rot);
         entity.setState(g.state);
         entity.setPointType(g.point_type);
+        entity.setRouteConfig(BaseRoute.fromSceneGadget(g));
         entity.setMetaGadget(g);
         entity.buildContent();
 

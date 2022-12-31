@@ -127,13 +127,15 @@ public class GameItem {
         return ownerId;
     }
 
+    public boolean isNewItem(Inventory inventory) {
+        return inventory.getItemByGuid(this.itemId) == null;
+    }
+
     public void setOwner(Player player) {
         this.ownerId = player.getUid();
         this.guid = player.getNextGameGuid();
         // display notification when player obtain new item
-        if (player.getInventory().getItemByGuid(this.itemId) == null){
-            this.newItem = true;
-        }
+        this.newItem = player.getCodex().isNewItem(this.itemId) == this.isNewItem(player.getInventory());
     }
 
     public ObjectId getObjectId() {

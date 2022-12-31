@@ -13,7 +13,7 @@ public class ContentNotFinishPlot extends BaseContent {
 
     @Override
     public boolean execute(GameQuest quest, QuestData.QuestContentCondition condition, String paramStr, int... params) {
-        GameMainQuest checkMainQuest = quest.getOwner().getQuestManager().getMainQuestById(params[0] / 100);
+        GameMainQuest checkMainQuest = quest.getOwner().getQuestManager().getMainQuestByTalkId(params[0]);
         if (checkMainQuest == null) {
             return false;
         }

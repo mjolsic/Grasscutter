@@ -1,14 +1,13 @@
 package emu.grasscutter.game.entity;
 
-import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.binout.ConfigGadget;
 import emu.grasscutter.data.excels.GadgetData;
 import emu.grasscutter.game.entity.gadget.*;
+import emu.grasscutter.game.entity.gadget.platform.BaseRoute;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.props.EntityIdType;
 import emu.grasscutter.game.props.EntityType;
-import emu.grasscutter.game.props.FightProperty;
 import emu.grasscutter.game.props.PlayerProperty;
 import emu.grasscutter.game.world.Scene;
 import emu.grasscutter.net.proto.AbilitySyncStateInfoOuterClass.AbilitySyncStateInfo;
@@ -18,6 +17,7 @@ import emu.grasscutter.net.proto.EntityClientDataOuterClass.EntityClientData;
 import emu.grasscutter.net.proto.EntityRendererChangedInfoOuterClass.EntityRendererChangedInfo;
 import emu.grasscutter.net.proto.GadgetInteractReqOuterClass.GadgetInteractReq;
 import emu.grasscutter.net.proto.MotionInfoOuterClass.MotionInfo;
+import emu.grasscutter.net.proto.PlatformInfoOuterClass;
 import emu.grasscutter.net.proto.PropPairOuterClass.PropPair;
 import emu.grasscutter.net.proto.ProtEntityTypeOuterClass.ProtEntityType;
 import emu.grasscutter.net.proto.SceneEntityAiInfoOuterClass.SceneEntityAiInfo;
@@ -28,10 +28,14 @@ import emu.grasscutter.scripts.constants.EventType;
 import emu.grasscutter.scripts.data.SceneGadget;
 import emu.grasscutter.scripts.data.ScriptArgs;
 import emu.grasscutter.server.packet.send.PacketGadgetStateNotify;
+import emu.grasscutter.server.packet.send.PacketPlatformStartRouteNotify;
+import emu.grasscutter.server.packet.send.PacketPlatformStopRouteNotify;
+import emu.grasscutter.server.packet.send.PacketSceneTimeNotify;
 import emu.grasscutter.utils.Position;
 import emu.grasscutter.utils.ProtoHelper;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -41,7 +45,10 @@ public class EntityGadget extends EntityBaseGadget {
     private final GadgetData data;
     private final Position pos;
     private final Position rot;
+    private final Position bornPos;
+    private final Position bornRot;
     private int gadgetId;
+    @Getter @Setter private GameEntity owner = null;
 
     private int state;
     private int pointType;
@@ -50,6 +57,7 @@ public class EntityGadget extends EntityBaseGadget {
     private SceneGadget metaGadget;
     @Nullable @Getter
     private ConfigGadget configGadget;
+    @Getter @Setter private BaseRoute routeConfig;
 
     public EntityGadget(Scene scene, int gadgetId, Position pos, Position rot) {
         super(scene);
@@ -60,7 +68,9 @@ public class EntityGadget extends EntityBaseGadget {
         this.id = getScene().getWorld().getNextEntityId(EntityIdType.GADGET);
         this.gadgetId = gadgetId;
         this.pos = pos.clone();
+        this.bornPos = this.pos.clone();
         this.rot = rot != null ? rot.clone() : new Position();
+        this.bornRot = this.rot.clone();
         fillFightProps(configGadget);
     }
 
@@ -192,13 +202,42 @@ public class EntityGadget extends EntityBaseGadget {
         getScene().getScriptManager().callEvent(new ScriptArgs(EventType.EVENT_ANY_GADGET_DIE, this.getConfigId()));
     }
 
+    public boolean startPlatform(){
+        if(routeConfig == null){
+            return false;
+        }
+
+        if(routeConfig.isStarted()){
+            return true;
+        }
+        getScene().broadcastPacket(new PacketSceneTimeNotify(getScene()));
+        routeConfig.startRoute(getScene());
+        getScene().broadcastPacket(new PacketPlatformStartRouteNotify(this));
+
+        return true;
+    }
+
+    public boolean stopPlatform(){
+        if(routeConfig == null){
+            return false;
+        }
+
+        if(!routeConfig.isStarted()){
+            return true;
+        }
+        routeConfig.stopRoute(getScene());
+        getScene().broadcastPacket(new PacketPlatformStopRouteNotify(this));
+
+        return true;
+    }
+
     @Override
     public SceneEntityInfo toProto() {
         EntityAuthorityInfo authority = EntityAuthorityInfo.newBuilder()
                 .setAbilityInfo(AbilitySyncStateInfo.newBuilder())
                 .setRendererChangedInfo(EntityRendererChangedInfo.newBuilder())
-                .setAiInfo(SceneEntityAiInfo.newBuilder().setIsAiOpen(true).setBornPos(Vector.newBuilder()))
-                .setBornPos(Vector.newBuilder())
+                .setAiInfo(SceneEntityAiInfo.newBuilder().setIsAiOpen(true).setBornPos(bornPos.toProto()))
+                .setBornPos(bornPos.toProto())
                 .build();
 
         SceneEntityInfo.Builder entityInfo = SceneEntityInfo.newBuilder()
@@ -233,12 +272,28 @@ public class EntityGadget extends EntityBaseGadget {
             gadgetInfo.setDraftId(this.metaGadget.draft_id);
         }
 
+        if(owner != null){
+            gadgetInfo.setOwnerEntityId(owner.getId());
+        }
+
         if (this.getContent() != null) {
             this.getContent().onBuildProto(gadgetInfo);
+        }
+
+        if(routeConfig!=null){
+            gadgetInfo.setPlatform(getPlatformInfo());
         }
 
         entityInfo.setGadget(gadgetInfo);
 
         return entityInfo.build();
+    }
+
+    public PlatformInfoOuterClass.PlatformInfo.Builder getPlatformInfo(){
+        if(routeConfig != null){
+            return routeConfig.toProto();
+        }
+
+        return PlatformInfoOuterClass.PlatformInfo.newBuilder();
     }
 }

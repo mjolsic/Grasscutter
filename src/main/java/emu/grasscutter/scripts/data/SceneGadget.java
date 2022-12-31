@@ -13,6 +13,9 @@ public class SceneGadget extends SceneObject{
     public int interact_id;
     public boolean isOneoff;
     public int draft_id;
+    public int route_id;
+    public boolean start_route = true;
+    public boolean is_use_point_array  = false;
 
     public void setIsOneoff(boolean isOneoff) {
         this.isOneoff = isOneoff;

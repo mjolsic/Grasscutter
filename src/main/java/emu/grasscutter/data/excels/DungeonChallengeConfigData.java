@@ -3,12 +3,8 @@ package emu.grasscutter.data.excels;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 
-import emu.grasscutter.game.dungeons.DungeonPassConditionType;
-import emu.grasscutter.game.dungeons.challenge.ChallengeType;
-import emu.grasscutter.game.quest.enums.LogicType;
+import emu.grasscutter.game.dungeons.challenge.enums.ChallengeType;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @ResourceType(name = "DungeonChallengeConfigData.json")

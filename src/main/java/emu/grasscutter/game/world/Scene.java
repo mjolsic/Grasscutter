@@ -8,7 +8,7 @@ import emu.grasscutter.data.binout.routes.Route;
 import emu.grasscutter.data.excels.*;
 import emu.grasscutter.game.avatar.Avatar;
 import emu.grasscutter.game.dungeons.DungeonManager;
-import emu.grasscutter.game.dungeons.DungeonPassConditionType;
+import emu.grasscutter.game.dungeons.enums.DungeonPassConditionType;
 import emu.grasscutter.game.dungeons.DungeonSettleListener;
 import emu.grasscutter.game.entity.*;
 import emu.grasscutter.game.entity.gadget.GadgetWorktop;
@@ -70,6 +70,7 @@ public class Scene {
     private Set<SceneNpcBornEntry> npcBornEntrySet;
     private final HashSet<Integer> unlockedForces;
     @Getter private boolean finishedLoading = false;
+    @Getter @Setter private int dungeonId = 0;
     private final List<Runnable> afterLoadedCallbacks = new ArrayList<>();
 
     public Scene(World world, SceneData sceneData) {
@@ -112,6 +113,13 @@ public class Scene {
     public GameEntity getEntityByConfigId(int configId) {
         return this.entities.values().stream()
                 .filter(x -> x.getConfigId() == configId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public GameEntity getEntityByConfigId(int configId, int groupId) {
+        return this.entities.values().stream()
+                .filter(x -> x.getConfigId() == configId && x.getGroupId() == groupId)
                 .findFirst()
                 .orElse(null);
     }
@@ -169,7 +177,7 @@ public class Scene {
     public synchronized void removePlayer(Player player) {
         // Remove from challenge if leaving
         if (this.getChallenge() != null && this.getChallenge().inProgress()) {
-            player.sendPacket(new PacketDungeonChallengeFinishNotify(this.getChallenge()));
+            player.sendPacket(new PacketDungeonChallengeFinishNotify(this.getChallenge(), 0));
         }
 
         // Remove player from scene

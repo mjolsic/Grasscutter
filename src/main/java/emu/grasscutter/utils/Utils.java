@@ -18,6 +18,7 @@ import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 
+import lombok.val;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -395,4 +396,14 @@ public final class Utils {
     public static <T> T drawRandomListElement(List<T> list) {
         return drawRandomListElement(list, null);
     }
+
+    public static <T extends Enum<T>> boolean isOneOf(T value, T... members){
+        for (val member : members){
+            if(value == member){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

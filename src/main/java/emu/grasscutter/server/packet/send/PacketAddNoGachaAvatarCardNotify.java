@@ -6,10 +6,10 @@ import emu.grasscutter.game.props.ActionReason;
 
 import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.packet.PacketOpcodes;
-import org.sorapointa.proto.AddNoGachaAvatarCardNotifyOuterClass.AddNoGachaAvatarCardNotify;
+import emu.grasscutter.net.proto.AddNoGachaAvatarCardNotifyOuterClass.AddNoGachaAvatarCardNotify;
 
 public class PacketAddNoGachaAvatarCardNotify extends BasePacket {
-	
+
 	public PacketAddNoGachaAvatarCardNotify(Avatar avatar, ActionReason reason, GameItem item) {
 		super(PacketOpcodes.AddNoGachaAvatarCardNotify, true);
 
@@ -20,7 +20,7 @@ public class PacketAddNoGachaAvatarCardNotify extends BasePacket {
 				.setItemId(item.getItemId())
 				.setInitialPromoteLevel(0)
 				.build();
-		
+
 		this.setData(proto);
 	}
 
@@ -34,7 +34,7 @@ public class PacketAddNoGachaAvatarCardNotify extends BasePacket {
 				.setItemId(item.getItemId())
 				.setInitialPromoteLevel(0)
 				.build();
-		
+
 		this.setData(proto);
 	}
 }
