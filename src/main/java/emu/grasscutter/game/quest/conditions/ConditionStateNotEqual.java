@@ -13,15 +13,9 @@ public class ConditionStateNotEqual extends BaseCondition {
     @Override
     public boolean execute(Player owner, QuestData questData, QuestData.QuestAcceptCondition condition, String paramStr, int... params) {
         GameQuest checkQuest = owner.getQuestManager().getQuestById(condition.getParam()[0]);
-        if (checkQuest == null) {
-            /*
-            Will spam the console
-            //Grasscutter.getLogger().debug("Warning: quest {} hasn't been started yet!", condition.getParam()[0]);
-
-            */
-            return false;
-        }
-        return checkQuest.getState().getValue() != condition.getParam()[1];
+        int questState = checkQuest == null ? 0 : checkQuest.getState().getValue();
+        
+        return questState != condition.getParam()[1];
     }
 
 }
