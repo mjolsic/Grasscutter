@@ -565,12 +565,12 @@ public class QuestManager extends BasePlayerManager {
                     case QUEST_CONTENT_FINISH_DUNGEON -> {
                         queueEvent(condition.getType(), condition.getParam()[0]); // its checking against a recorded map, so dw
                     }
-                    case QUEST_CONTENT_CITY_LEVEL_UP -> {
-		                var cityItem = player.getCityLevelMap().get(condition.getParam()[0]);
-                        if (cityItem != null && cityItem.getLevel() >= condition.getParam()[1]) {
-                            queueEvent(condition.getType(), condition.getParam()[0], condition.getParam()[1]);
-                        }
-                    }
+                    // case QUEST_CONTENT_CITY_LEVEL_UP -> {
+		            //     var cityItem = player.getCityLevelMap().get(condition.getParam()[0]);
+                    //     if (cityItem != null && cityItem.getLevel() >= condition.getParam()[1]) {
+                    //         queueEvent(condition.getType(), condition.getParam()[0], condition.getParam()[1]);
+                    //     }
+                    // }
                 }
             }
         }, 1);
