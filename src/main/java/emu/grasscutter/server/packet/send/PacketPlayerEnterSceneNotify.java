@@ -22,10 +22,9 @@ public class PacketPlayerEnterSceneNotify extends BasePacket {
         PlayerEnterSceneNotify.Builder proto = PlayerEnterSceneNotify.newBuilder()
                 .setSceneId(player.getSceneId())
                 .setPos(player.getPosition().toProto())
-                .setSceneBeginTime(player.getSceneBeginTime())
+                .setSceneBeginTime(System.currentTimeMillis())
                 .setType(EnterType.ENTER_TYPE_SELF)
                 .setTargetUid(player.getUid())
-                .addAllSceneTagIdList(player.getSceneTag().getTags())
                 .setEnterSceneToken(player.getEnterSceneToken())
                 .setWorldLevel(player.getWorldLevel())
                 .setEnterReason(EnterReason.Login.getValue())
@@ -36,32 +35,29 @@ public class PacketPlayerEnterSceneNotify extends BasePacket {
         this.setData(proto);
     }
 
-    public PacketPlayerEnterSceneNotify(Player player, EnterType type, EnterReason reason, int newScene, Position oldPos) {
-        this(player, player, type, reason, newScene, oldPos);
+    public PacketPlayerEnterSceneNotify(Player player, EnterType type, EnterReason reason, int newScene, Position newPos) {
+        this(player, player, type, reason, newScene, newPos);
     }
 
     // Teleport or go somewhere
-    public PacketPlayerEnterSceneNotify(Player player, Player target, EnterType type, EnterReason reason, int newScene, Position oldPos) {
+    public PacketPlayerEnterSceneNotify(Player player, Player target, EnterType type, EnterReason reason, int newScene, Position newPos) {
         super(PacketOpcodes.PlayerEnterSceneNotify);
 
         player.setSceneLoadState(SceneLoadState.LOADING);
         player.setEnterSceneToken(Utils.randomRange(1000, 99999));
-        
 
         PlayerEnterSceneNotify.Builder proto = PlayerEnterSceneNotify.newBuilder()
-                .setPrevSceneId(player.getScene().getPrevScene())
-                .setPrevPos(oldPos.toProto())
+                .setPrevSceneId(player.getSceneId())
+                .setPrevPos(player.getPosition().toProto())
                 .setSceneId(newScene)
-                .setPos(player.getPosition().toProto())
-                .setSceneBeginTime(player.getSceneBeginTime())
+                .setPos(newPos.toProto())
+                .setSceneBeginTime(System.currentTimeMillis())
                 .setType(type)
                 .setTargetUid(target.getUid())
-                .addAllSceneTagIdList(player.getSceneTag().getTags())
                 .setEnterSceneToken(player.getEnterSceneToken())
                 .setWorldLevel(target.getWorld().getWorldLevel())
                 .setEnterReason(reason.getValue())
                 .setWorldType(1)
-                .setDungeonId(player.getScene().getDungeonId())
                 .setSceneTransaction(newScene + "-" + target.getUid() + "-" + (int) (System.currentTimeMillis() / 1000) + "-" + 18402);
 
         this.setData(proto);

@@ -5,18 +5,13 @@ import emu.grasscutter.net.packet.PacketOpcodes;
 import emu.grasscutter.net.proto.ScenePointUnlockNotifyOuterClass.ScenePointUnlockNotify;
 
 public class PacketScenePointUnlockNotify extends BasePacket {
-    public PacketScenePointUnlockNotify(int sceneId, int pointId, boolean isUnlock) {
+    public PacketScenePointUnlockNotify(int sceneId, int pointId) {
         super(PacketOpcodes.ScenePointUnlockNotify);
 
         ScenePointUnlockNotify.Builder p = ScenePointUnlockNotify.newBuilder()
-                .setSceneId(sceneId);
+                .setSceneId(sceneId)
+                .addPointList(pointId);
 
-        if (isUnlock) {
-            p.addPointList(pointId);
-        } else {
-            p.addLockedPointList(pointId);
-        }
-        
         this.setData(p);
     }
 

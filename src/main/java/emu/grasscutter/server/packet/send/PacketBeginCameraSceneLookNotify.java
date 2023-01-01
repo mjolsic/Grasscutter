@@ -27,7 +27,7 @@ public class PacketBeginCameraSceneLookNotify extends BasePacket {
             .setScreenY(parameters.screenY)
             .setScreenX(parameters.screenX)
             .setIsForce(parameters.isForce)
-            .setIsForceWalk(parameters.isForceWalk)
+            .setIsForce(parameters.isForceWalk)
             .setEntityId(parameters.entityId)
             .addAllOtherParams(parameters.otherParams);
 		this.setData(builder);

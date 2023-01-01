@@ -14,9 +14,16 @@ public class PacketGetScenePointRsp extends BasePacket {
         GetScenePointRsp.Builder p = GetScenePointRsp.newBuilder()
                 .setSceneId(sceneId);
 
-        if (GameData.getScenePointIdList().size() > 0) {
+        if (GameData.getScenePointIdList().size() == 0) {
+            for (int i = 1; i < 1000; i++) {
+                p.addUnlockedPointList(i);
+            }
+        } else {
             p.addAllUnlockedPointList(player.getUnlockedScenePoints(sceneId));
-            p.addAllUnlockAreaList(player.getUnlockedSceneAreas(sceneId));
+        }
+
+        for (int i = 1; i < 9; i++) {
+            p.addUnlockAreaList(i);
         }
 
         this.setData(p);
