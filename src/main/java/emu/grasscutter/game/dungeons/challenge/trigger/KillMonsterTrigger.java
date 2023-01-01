@@ -7,12 +7,7 @@ import emu.grasscutter.server.packet.send.PacketChallengeDataNotify;
 public class KillMonsterTrigger extends ChallengeTrigger{
     @Override
     public void onBegin(WorldChallenge challenge) {
-        int paramIndex = challenge.getParamList().indexOf(challenge.getGoal());
-        
-        challenge.getScene().broadcastPacket(new PacketChallengeDataNotify(
-            challenge, 
-            paramIndex+1, 
-            challenge.getScore().get()));
+        challenge.getScene().broadcastPacket(new PacketChallengeDataNotify(challenge, 1, challenge.getScore().get()));
     }
 
     @Override
