@@ -7,7 +7,7 @@ public class ItemParamData {
     @SerializedName(value="id", alternate={"itemId"})
     private int id;
 
-    @SerializedName(value="count", alternate={"itemCount", "itemNum"})
+    @SerializedName(value="count", alternate={"itemCount"})
     private int count;
 
     public ItemParamData() {}
