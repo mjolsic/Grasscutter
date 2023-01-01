@@ -68,11 +68,6 @@ public final class PlayerTeleportEvent extends PlayerEvent implements Cancellabl
         /**
          * Client requested transmit.
          */
-        CLIENT,
-
-        /**
-         * Quit From Dungeon
-         */
-        QUIT_DUNGEON
+        CLIENT
     }
 }

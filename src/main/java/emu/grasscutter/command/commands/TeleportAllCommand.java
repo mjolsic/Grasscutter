@@ -23,7 +23,7 @@ public final class TeleportAllCommand implements CommandHandler {
             if (player.equals(targetPlayer))
                 continue;
 
-            player.getWorld().transferPlayerToScene(player, targetPlayer.getSceneId(), TeleportType.COMMAND, targetPlayer.getPosition(), targetPlayer.getRotation());
+            player.getWorld().transferPlayerToScene(player, targetPlayer.getSceneId(), TeleportType.COMMAND, targetPlayer.getPosition());
         }
 
         CommandHandler.sendMessage(sender, translate(sender, "commands.teleportAll.success"));
