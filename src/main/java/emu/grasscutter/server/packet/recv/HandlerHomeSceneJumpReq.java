@@ -24,13 +24,11 @@ public class HandlerHomeSceneJumpReq extends PacketHandler {
 
 		Scene scene = session.getPlayer().getWorld().getSceneById(req.getIsEnterRoomScene() ? homeScene.getRoomSceneId() : realmId);
 		Position pos = scene.getScriptManager().getConfig().born_pos;
-		Position rot = scene.getScriptManager().getConfig().born_rot;
 
 		session.getPlayer().getWorld().transferPlayerToScene(
 				session.getPlayer(),
 				req.getIsEnterRoomScene() ? homeScene.getRoomSceneId() : realmId,
-				pos,
-				rot
+				pos
 		);
 
 		session.send(new PacketHomeSceneJumpRsp(req.getIsEnterRoomScene()));
