@@ -189,8 +189,11 @@ public class Inventory extends BasePlayerManager implements Iterable<GameItem> {
         var data = item.getItemData();
         if (data == null) return null;
 
+        this.player.getProgressManager().addItemObtainedHistory(item.getItemId(), item.getCount());
+
         if (data.isUseOnGain()) {
             var params = new UseItemParams(this.player, data.getUseTarget());
+            params.usedItemId = data.getId();
             this.player.getServer().getInventorySystem().useItemDirect(data, params);
             return null;
         }
@@ -253,6 +256,7 @@ public class Inventory extends BasePlayerManager implements Iterable<GameItem> {
         this.player.getCodex().checkAddedItem(item);
         // Set owner and guid FIRST!
         item.setOwner(this.player);
+        item.checkIsNew(this);
         // Put in item store
         getItems().put(item.getGuid(), item);
         if (tab != null) {

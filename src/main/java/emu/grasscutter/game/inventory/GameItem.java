@@ -1,18 +1,6 @@
 package emu.grasscutter.game.inventory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.bson.types.ObjectId;
-
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Indexed;
-import dev.morphia.annotations.PostLoad;
-import dev.morphia.annotations.Transient;
-
+import dev.morphia.annotations.*;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameDepot;
 import emu.grasscutter.data.common.ItemParamData;
@@ -36,6 +24,12 @@ import emu.grasscutter.net.proto.WeaponOuterClass.Weapon;
 import emu.grasscutter.utils.WeightedList;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity(value = "items", useDiscriminator = false)
 public class GameItem {
@@ -64,6 +58,7 @@ public class GameItem {
 
     @Getter @Setter private int equipCharacter;
     @Transient @Getter @Setter private int weaponEntityId;
+    @Transient @Getter private boolean newItem = false;
 
     public GameItem() {
         // Morphia only
@@ -129,6 +124,13 @@ public class GameItem {
     public void setOwner(Player player) {
         this.ownerId = player.getUid();
         this.guid = player.getNextGameGuid();
+    }
+
+    public void checkIsNew(Inventory inventory){
+        // display notification when player obtain new item
+        if (inventory.getItemByGuid(this.itemId) == null){
+            this.newItem = true;
+        }
     }
 
     public void removeOwner() {
@@ -359,7 +361,11 @@ public class GameItem {
     }
 
     public ItemHint toItemHintProto() {
-        return ItemHint.newBuilder().setItemId(getItemId()).setCount(getCount()).setIsNew(false).build();
+        return ItemHint.newBuilder()
+            .setItemId(getItemId())
+            .setCount(getCount())
+            .setIsNew(isNewItem())
+            .build();
     }
 
     public ItemParam toItemParam() {

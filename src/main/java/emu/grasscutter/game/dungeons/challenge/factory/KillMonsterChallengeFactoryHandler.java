@@ -1,6 +1,7 @@
 package emu.grasscutter.game.dungeons.challenge.factory;
 
 import emu.grasscutter.game.dungeons.challenge.WorldChallenge;
+import emu.grasscutter.game.dungeons.challenge.enums.ChallengeType;
 import emu.grasscutter.game.dungeons.challenge.trigger.InTimeTrigger;
 import emu.grasscutter.game.dungeons.challenge.trigger.KillMonsterTrigger;
 import emu.grasscutter.game.world.Scene;
@@ -10,9 +11,9 @@ import java.util.List;
 
 public class KillMonsterChallengeFactoryHandler implements ChallengeFactoryHandler{
     @Override
-    public boolean isThisType(int challengeIndex, int challengeId, int param3, int param4, int param5, int param6, Scene scene, SceneGroup group) {
+    public boolean isThisType(ChallengeType challengeType) {
         // ActiveChallenge with 180,180,45,133108061,1,0
-        return challengeId == 180;
+        return challengeType == ChallengeType.CHALLENGE_KILL_COUNT_IN_TIME;
     }
 
     @Override

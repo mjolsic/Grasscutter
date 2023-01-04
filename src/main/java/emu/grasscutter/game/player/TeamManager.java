@@ -572,6 +572,13 @@ public class TeamManager extends BasePlayerDataManager {
         this.getPlayer().sendPacket(new PacketChangeAvatarRsp(guid));
     }
 
+    public void onAvatarDieDamage(){
+        getActiveTeam().forEach(entity -> {
+            entity.damage(entity.getFightProperty(FightProperty.FIGHT_PROP_MAX_HP) * .1f);
+            player.sendPacket(new PacketAvatarLifeStateChangeNotify(entity.getAvatar()));
+        });
+    }
+
     public void onAvatarDie(long dieGuid) {
         EntityAvatar deadAvatar = this.getCurrentAvatarEntity();
 

@@ -7,7 +7,7 @@ import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.excels.ChapterData;
 import emu.grasscutter.data.excels.QuestData;
 import emu.grasscutter.data.excels.TriggerExcelConfigData;
-import emu.grasscutter.game.dungeons.DungeonPassConditionType;
+import emu.grasscutter.game.dungeons.enums.DungeonPassConditionType;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.props.ActionReason;
 import emu.grasscutter.game.quest.enums.QuestCond;
@@ -43,6 +43,8 @@ public class GameQuest {
     @Getter @Setter private int acceptTime;
     @Getter @Setter private int finishTime;
 
+    @Getter @Setter private long startGameDay;
+
     @Getter private int[] finishProgressList;
     @Getter private int[] failProgressList;
     @Transient @Getter private Map<String, TriggerExcelConfigData> triggerData;
@@ -66,6 +68,7 @@ public class GameQuest {
         clearProgress(false);
         this.acceptTime = Utils.getCurrentSeconds();
         this.startTime = this.acceptTime;
+        this.startGameDay = getOwner().getWorld().getGameTimeDays();
         this.state = QuestState.QUEST_STATE_UNFINISHED;
         val triggerCond = questData.getFinishCond().stream()
             .filter(p -> p.getType() == QuestContent.QUEST_CONTENT_TRIGGER_FIRE).toList();
@@ -160,7 +163,7 @@ public class GameQuest {
 
         getOwner().sendPacket(new PacketQuestListUpdateNotify(this));
 
-        if (getQuestData().finishParent()) {
+        if (getQuestData().isFinishParent()) {
             // This quest finishes the questline - the main quest will also save the quest to db, so we don't have to call save() here
             getMainQuest().finish();
         }
@@ -171,6 +174,8 @@ public class GameQuest {
         getOwner().getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_FINISH_PLOT, this.subQuestId, 0);
         getOwner().getQuestManager().queueEvent(QuestCond.QUEST_COND_STATE_EQUAL, this.subQuestId, this.state.getValue(),0,0,0);
         getOwner().getScene().triggerDungeonEvent(DungeonPassConditionType.DUNGEON_COND_FINISH_QUEST, getSubQuestId());
+
+        getOwner().getProgressManager().tryUnlockOpenStates();
 
         if (ChapterData.endQuestChapterMap.containsKey(subQuestId)) {
             mainQuest.getOwner().sendPacket(new PacketChapterStateNotify(

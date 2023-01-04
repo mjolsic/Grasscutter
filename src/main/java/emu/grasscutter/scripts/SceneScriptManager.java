@@ -17,6 +17,7 @@ import emu.grasscutter.scripts.service.ScriptMonsterSpawnService;
 import emu.grasscutter.scripts.service.ScriptMonsterTideService;
 import io.netty.util.concurrent.FastThreadLocalThread;
 import kotlin.Pair;
+import lombok.val;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
@@ -24,9 +25,10 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static emu.grasscutter.scripts.constants.EventType.EVENT_TIMER_EVENT;
+import static emu.grasscutter.scripts.constants.EventType.*;
 
 public class SceneScriptManager {
     private final Scene scene;
@@ -39,6 +41,7 @@ public class SceneScriptManager {
     private final Map<Integer, Set<SceneTrigger>> currentTriggers;
     private final Map<String, Set<SceneTrigger>> triggersByGroupScene;
     private final Map<Integer, Set<Pair<String, Integer>>> activeGroupTimers;
+    private final Map<String, AtomicInteger> triggerInvocations;
     private final Map<Integer, EntityRegion> regions; // <EntityId-Region>
     private final Map<Integer,SceneGroup> sceneGroups;
     private ScriptMonsterTideService scriptMonsterTideService;
@@ -58,6 +61,7 @@ public class SceneScriptManager {
         this.currentTriggers = new ConcurrentHashMap<>();
         this.triggersByGroupScene = new ConcurrentHashMap<>();
         this.activeGroupTimers = new ConcurrentHashMap<>();
+        this.triggerInvocations = new ConcurrentHashMap<>();
 
         this.regions = new ConcurrentHashMap<>();
         this.variables = new ConcurrentHashMap<>();
@@ -103,16 +107,19 @@ public class SceneScriptManager {
         triggers.forEach(this::registerTrigger);
     }
     public void registerTrigger(SceneTrigger trigger) {
-        getTriggersByEvent(trigger.event).add(trigger);
-        Grasscutter.getLogger().debug("Registered trigger {}", trigger.name);
+        triggerInvocations.put(trigger.getName(), new AtomicInteger(0));
+        getTriggersByEvent(trigger.getEvent()).add(trigger);
+        Grasscutter.getLogger().debug("Registered trigger {}", trigger.getName());
     }
+
     public void deregisterTrigger(List<SceneTrigger> triggers) {
         triggers.forEach(this::deregisterTrigger);
     }
     public void deregisterTrigger(SceneTrigger trigger) {
-        getTriggersByEvent(trigger.event).remove(trigger);
-        Grasscutter.getLogger().debug("deregistered trigger {}", trigger.name);
+        getTriggersByEvent(trigger.getEvent()).remove(trigger);
+        Grasscutter.getLogger().debug("deregistered trigger {}", trigger.getName());
     }
+
     public void resetTriggers(int eventId) {
         currentTriggers.put(eventId, ConcurrentHashMap.newKeySet());
     }
@@ -132,7 +139,7 @@ public class SceneScriptManager {
 
         if(!groupSceneTriggers.isEmpty()) {
             for (var trigger : groupSceneTriggers) {
-                currentTriggers.get(trigger.event).remove(trigger);
+                currentTriggers.get(trigger.getEvent()).remove(trigger);
             }
             groupSceneTriggers.clear();
         }
@@ -383,12 +390,12 @@ public class SceneScriptManager {
             Set<SceneTrigger> relevantTriggers = new HashSet<>();
             if (eventType == EventType.EVENT_ENTER_REGION || eventType == EventType.EVENT_LEAVE_REGION) {
                 List<SceneTrigger> relevantTriggersList = this.getTriggersByEvent(eventType).stream()
-                    .filter(p -> p.condition.contains(String.valueOf(params.param1)) &&
-                        (p.source.isEmpty() || p.source.equals(params.getEventSource()))).toList();
+                    .filter(p -> p.getCondition().contains(String.valueOf(params.param1)) &&
+                        (p.getSource().isEmpty() || p.getSource().equals(params.getEventSource()))).toList();
                 relevantTriggers = new HashSet<>(relevantTriggersList);
             } else {relevantTriggers = new HashSet<>(this.getTriggersByEvent(eventType));}
             for (SceneTrigger trigger : relevantTriggers) {
-                handleEventForTrigger(eventType, params, trigger);
+                handleEventForTrigger(params, trigger);
             }
         } catch (Throwable throwable){
             Grasscutter.getLogger().error("Condition Trigger "+ params.type +" triggered exception", throwable);
@@ -398,44 +405,60 @@ public class SceneScriptManager {
         }
     }
 
-    private boolean handleEventForTrigger(int eventType, ScriptArgs params, SceneTrigger trigger ){
-        Grasscutter.getLogger().debug("checking trigger {} for event {}", trigger.name, eventType);
+    private boolean handleEventForTrigger(ScriptArgs params, SceneTrigger trigger ){
+        Grasscutter.getLogger().debug("checking trigger {} for event {}", trigger.getName(), params.type);
         try {
+            // setup execution
             ScriptLoader.getScriptLib().setCurrentGroup(trigger.currentGroup);
             ScriptLoader.getScriptLib().setCurrentCallParams(params);
-            LuaValue ret = this.callScriptFunc(trigger.condition, trigger.currentGroup, params);
-            Grasscutter.getLogger().trace("Call Condition Trigger {}, [{},{},{}]", trigger.condition, params.param1, params.source_eid, params.target_eid);
-            if (ret.isboolean() && ret.checkboolean()) {
-                // the SetGroupVariableValueByGroup in tower need the param to record the first stage time
-                ret = this.callScriptFunc(trigger.action, trigger.currentGroup, params);
-                Grasscutter.getLogger().trace("Call Action Trigger {}", trigger.action);
-                if (trigger.event == EventType.EVENT_ENTER_REGION) {
-                    EntityRegion region = this.regions.values().stream().filter(p -> p.getConfigId() == params.param1).toList().get(0);
-                    getScene().getPlayers().forEach(p -> p.onEnterRegion(region.getMetaRegion()));
-                    deregisterRegion(region.getMetaRegion());
-                } else if (trigger.event == EventType.EVENT_LEAVE_REGION) {
-                    EntityRegion region = this.regions.values().stream().filter(p -> p.getConfigId() == params.param1).toList().get(0);
-                    getScene().getPlayers().forEach(p -> p.onLeaveRegion(region.getMetaRegion()));
-                    deregisterRegion(region.getMetaRegion());
-                }
-                if(ret.isboolean() && ret.checkboolean() || ret.isint() && ret.checkint()==0) {
-                    if(eventType == EVENT_TIMER_EVENT){
-                        cancelGroupTimerEvent(trigger.currentGroup.id, trigger.source);
-                    }
-                    deregisterTrigger(trigger);
-                }
+
+            if (evaluateTriggerCondition(trigger, params)) {
+                callTrigger(trigger, params);
                 return true;
             } else {
-                Grasscutter.getLogger().debug("Condition Trigger {} returned {}", trigger.condition, ret);
+                Grasscutter.getLogger().debug("Condition Trigger {} returned false", trigger.getCondition());
             }
             //TODO some ret do not bool
             return false;
         }
         catch (Throwable ex){
-            Grasscutter.getLogger().error("Condition Trigger "+trigger.name+" triggered exception", ex);
+            Grasscutter.getLogger().error("Condition Trigger "+trigger.getName()+" triggered exception", ex);
             return false;
         }finally {
             ScriptLoader.getScriptLib().removeCurrentGroup();
+        }
+    }
+
+    private boolean evaluateTriggerCondition(SceneTrigger trigger, ScriptArgs params){
+        Grasscutter.getLogger().trace("Call Condition Trigger {}, [{},{},{}]", trigger.getCondition(), params.param1, params.source_eid, params.target_eid);
+        LuaValue ret = this.callScriptFunc(trigger.getCondition(), trigger.currentGroup, params);
+        return ret.isboolean() && ret.checkboolean();
+    }
+
+    private void callTrigger(SceneTrigger trigger, ScriptArgs params){
+        // the SetGroupVariableValueByGroup in tower need the param to record the first stage time
+        LuaValue ret = this.callScriptFunc(trigger.getAction(), trigger.currentGroup, params);
+        val invocationsCounter = triggerInvocations.get(trigger.getName());
+        val invocations = invocationsCounter.incrementAndGet();
+        Grasscutter.getLogger().trace("Call Action Trigger {}", trigger.getAction());
+
+        if (trigger.getEvent() == EventType.EVENT_ENTER_REGION) {
+            EntityRegion region = this.regions.values().stream().filter(p -> p.getConfigId() == params.param1).toList().get(0);
+            getScene().getPlayers().forEach(p -> p.onEnterRegion(region.getMetaRegion()));
+            deregisterRegion(region.getMetaRegion());
+        } else if (trigger.getEvent() == EventType.EVENT_LEAVE_REGION) {
+            EntityRegion region = this.regions.values().stream().filter(p -> p.getConfigId() == params.param1).toList().get(0);
+            getScene().getPlayers().forEach(p -> p.onLeaveRegion(region.getMetaRegion()));
+            deregisterRegion(region.getMetaRegion());
+        }
+
+        // always deregister on error, otherwise only if the count is reached
+        if(ret.isboolean() && !ret.checkboolean() || ret.isint() && ret.checkint()!=0
+        || trigger.getTrigger_count()>0 && invocations >= trigger.getTrigger_count()) {
+            if(trigger.getEvent() == EVENT_TIMER_EVENT){
+                cancelGroupTimerEvent(trigger.currentGroup.id, trigger.getSource());
+            }
+            deregisterTrigger(trigger);
         }
     }
 
@@ -596,9 +619,9 @@ public class SceneScriptManager {
         Grasscutter.getLogger().info("creating group timer event for group {} with source {} and time {}",
             groupID, source, time);
         for(SceneTrigger trigger : group.triggers.values()){
-            if(trigger.event == EVENT_TIMER_EVENT &&trigger.source.equals(source)){
+            if(trigger.getEvent() == EVENT_TIMER_EVENT &&trigger.getSource().equals(source)){
                 Grasscutter.getLogger().warn("[LUA] Found timer trigger with source {} for group {} : {}",
-                    source, groupID, trigger.name);
+                    source, groupID, trigger.getName());
                 var taskIdentifier = Grasscutter.getGameServer().getScheduler().scheduleDelayedRepeatingTask(() ->
                     callEvent(new ScriptArgs(EVENT_TIMER_EVENT)
                         .setEventSource(source)), (int)time, (int)time);

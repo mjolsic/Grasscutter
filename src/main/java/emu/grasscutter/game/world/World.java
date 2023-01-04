@@ -1,38 +1,33 @@
 package emu.grasscutter.game.world;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import emu.grasscutter.game.dungeons.DungeonManager;
+import emu.grasscutter.data.GameData;
+import emu.grasscutter.data.excels.DungeonData;
+import emu.grasscutter.data.excels.SceneData;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.player.Player.SceneLoadState;
 import emu.grasscutter.game.props.EnterReason;
 import emu.grasscutter.game.props.EntityIdType;
 import emu.grasscutter.game.props.SceneType;
-import emu.grasscutter.data.GameData;
-import emu.grasscutter.data.excels.DungeonData;
-import emu.grasscutter.data.excels.SceneData;
 import emu.grasscutter.game.quest.enums.QuestContent;
+import emu.grasscutter.game.world.data.TeleportProperties;
 import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.proto.EnterTypeOuterClass.EnterType;
 import emu.grasscutter.scripts.data.SceneConfig;
 import emu.grasscutter.server.event.player.PlayerTeleportEvent;
 import emu.grasscutter.server.event.player.PlayerTeleportEvent.TeleportType;
 import emu.grasscutter.server.game.GameServer;
-import emu.grasscutter.server.packet.send.PacketDelTeamEntityNotify;
-import emu.grasscutter.server.packet.send.PacketPlayerEnterSceneNotify;
-import emu.grasscutter.server.packet.send.PacketScenePlayerInfoNotify;
-import emu.grasscutter.server.packet.send.PacketSyncScenePlayTeamEntityNotify;
-import emu.grasscutter.server.packet.send.PacketSyncTeamEntityNotify;
-import emu.grasscutter.server.packet.send.PacketWorldPlayerInfoNotify;
-import emu.grasscutter.server.packet.send.PacketWorldPlayerRTTNotify;
+import emu.grasscutter.server.packet.send.*;
 import emu.grasscutter.utils.Position;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static emu.grasscutter.server.event.player.PlayerTeleportEvent.TeleportType.SCRIPT;
 
@@ -49,6 +44,13 @@ public class World implements Iterable<Player> {
 
     private boolean isMultiplayer;
 
+
+    @Getter
+    private int tickCount = 0;
+    @Getter private boolean isPaused = false;
+    private long lastUpdateTime;
+    @Getter private long currentWorldTime = 0;
+
     public World(Player player) {
         this(player, false);
     }
@@ -62,6 +64,8 @@ public class World implements Iterable<Player> {
         this.levelEntityId = this.getNextEntityId(EntityIdType.MPLEVEL);
         this.worldLevel = player.getWorldLevel();
         this.isMultiplayer = isMultiplayer;
+        this.lastUpdateTime = System.currentTimeMillis();
+        this.currentWorldTime = owner.getPlayerGameTime();
 
         this.owner.getServer().registerWorld(this);
     }
@@ -225,66 +229,6 @@ public class World implements Iterable<Player> {
     }
 
     public boolean transferPlayerToScene(Player player, int sceneId, TeleportType teleportType, DungeonData dungeonData, Position teleportTo) {
-        // Call player teleport event.
-        PlayerTeleportEvent event = new PlayerTeleportEvent(player, teleportType, player.getPosition(), teleportTo);
-        // Call event & check if it was canceled.
-        event.call(); if (event.isCanceled()) {
-            return false; // Teleport was canceled.
-        }
-
-        // Set the destination.
-        teleportTo = event.getDestination();
-
-        if (GameData.getSceneDataMap().get(sceneId) == null) {
-            return false;
-        }
-
-        Scene oldScene = null;
-
-        if (player.getScene() != null) {
-            oldScene = player.getScene();
-
-            // Don't deregister scenes if the player is going to tp back into them
-            if (oldScene.getId() == sceneId) {
-                oldScene.setDontDestroyWhenEmpty(true);
-            }
-
-            oldScene.removePlayer(player);
-        }
-
-        Scene newScene = this.getSceneById(sceneId);
-        newScene.addPlayer(player);
-        player.setAvatarsAbilityForScene(newScene);
-        // Dungeon
-        // Dungeon system is handling this already
-        // if(dungeonData!=null){
-        //     var dungeonManager = new DungeonManager(newScene, dungeonData);
-        //     dungeonManager.startDungeon();
-        // }
-        SceneConfig config = newScene.getScriptManager().getConfig();
-        if (teleportTo == null && config != null) {
-            if (config.born_pos != null) {
-                teleportTo = newScene.getScriptManager().getConfig().born_pos;
-            }
-            if (config.born_rot != null) {
-                player.getRotation().set(config.born_rot);
-            }
-        }
-
-        // Set player position
-        if (teleportTo == null) {
-            teleportTo = player.getPosition();
-        }
-
-        player.getPosition().set(teleportTo);
-
-        if (oldScene != null && newScene != oldScene) {
-            newScene.setPrevScene(oldScene.getId());
-            oldScene.setDontDestroyWhenEmpty(false);
-        }
-
-        // Get enter types
-        EnterType enterType = EnterType.ENTER_TYPE_JUMP;
         EnterReason enterReason = switch (teleportType) {
             // shouldn't affect the teleportation, but its clearer when inspecting the packets
             // TODO add more conditions for different reason.
@@ -294,28 +238,102 @@ public class World implements Iterable<Player> {
             case COMMAND -> EnterReason.Gm;
             case SCRIPT -> EnterReason.Lua;
             case CLIENT -> EnterReason.ClientTransmit;
+            case DUNGEON -> EnterReason.DungeonEnter;
             default -> EnterReason.None;
         };
+        return transferPlayerToScene(player, sceneId, teleportType, enterReason, dungeonData, teleportTo);
+    }
 
+
+    public boolean transferPlayerToScene(Player player, int sceneId, TeleportType teleportType, EnterReason enterReason, DungeonData dungeonData, Position teleportTo) {
+        // Get enter types
+        val teleportProps = TeleportProperties.builder()
+            .sceneId(sceneId)
+            .teleportType(teleportType)
+            .enterReason(enterReason)
+            .teleportTo(teleportTo)
+            .enterType(EnterType.ENTER_TYPE_JUMP);
+
+        val sceneData = GameData.getSceneDataMap().get(sceneId);
+        val sceneType = sceneData!= null ? sceneData.getSceneType() : SceneType.SCENE_NONE;
         if (dungeonData != null) {
-            enterType = EnterType.ENTER_TYPE_DUNGEON;
-            enterReason = EnterReason.DungeonEnter;
-        } else if (oldScene == newScene) {
-            enterType = EnterType.ENTER_TYPE_GOTO;
-        } else if (newScene.getSceneType() == SceneType.SCENE_HOME_WORLD) {
+            teleportProps.enterType(EnterType.ENTER_TYPE_DUNGEON)
+                .enterReason(EnterReason.DungeonEnter);
+        } else if (player.getSceneId() == sceneId) {
+            teleportProps.enterType(EnterType.ENTER_TYPE_GOTO);
+        } else if (sceneType == SceneType.SCENE_HOME_WORLD) {
             // Home
-            enterReason = EnterReason.EnterHome;
-            enterType = EnterType.ENTER_TYPE_SELF_HOME;
-        } else if (newScene.getSceneType() == SceneType.SCENE_HOME_ROOM) {
-            enterReason = EnterReason.HomeSceneJump;
-            enterType = EnterType.ENTER_TYPE_SELF_HOME;
+            teleportProps.enterType(EnterType.ENTER_TYPE_SELF_HOME)
+                .enterReason(EnterReason.EnterHome);
+        } else if (sceneType == SceneType.SCENE_HOME_ROOM) {
+            teleportProps.enterType(EnterType.ENTER_TYPE_SELF_HOME)
+                .enterReason(EnterReason.HomeSceneJump);
+        }
+        return transferPlayerToScene(player, teleportProps.build());
+    }
+
+    public boolean transferPlayerToScene(Player player, TeleportProperties teleportProperties) {
+        // Call player teleport event.
+        PlayerTeleportEvent event = new PlayerTeleportEvent(player, teleportProperties, player.getPosition());
+        // Call event & check if it was canceled.
+        event.call(); if (event.isCanceled()) {
+            return false; // Teleport was canceled.
+        }
+
+        if (GameData.getSceneDataMap().get(teleportProperties.getSceneId()) == null) {
+            return false;
+        }
+
+        Scene oldScene = null;
+
+        if (player.getScene() != null) {
+            oldScene = player.getScene();
+
+            // Don't deregister scenes if the player is going to tp back into them
+            if (oldScene.getId() == teleportProperties.getSceneId()) {
+                oldScene.setDontDestroyWhenEmpty(true);
+            }
+
+            oldScene.removePlayer(player);
+        }
+
+        Scene newScene = this.getSceneById(teleportProperties.getSceneId());
+        newScene.addPlayer(player);
+        player.setAvatarsAbilityForScene(newScene);
+        // Dungeon
+        // Dungeon system is handling this already
+        // if(dungeonData!=null){
+        //     var dungeonManager = new DungeonManager(newScene, dungeonData);
+        //     dungeonManager.startDungeon();
+        // }
+        SceneConfig config = newScene.getScriptManager().getConfig();
+        if (teleportProperties.getTeleportTo() == null && config != null) {
+            if (config.born_pos != null) {
+                teleportProperties.setTeleportTo(newScene.getScriptManager().getConfig().born_pos);
+            }
+            if (config.born_rot != null) {
+                teleportProperties.setTeleportRot(config.born_rot);
+            }
+        }
+
+        // Set player position and rotation
+        if(teleportProperties.getTeleportTo() != null) {
+            player.getPosition().set(teleportProperties.getTeleportTo());
+        }
+        if(teleportProperties.getTeleportRot()!=null) {
+            player.getRotation().set(teleportProperties.getTeleportRot());
+        }
+
+        if (oldScene != null && newScene != oldScene) {
+            newScene.setPrevScene(oldScene.getId());
+            oldScene.setDontDestroyWhenEmpty(false);
         }
 
 
         // Teleport packet
-        player.sendPacket(new PacketPlayerEnterSceneNotify(player, enterType, enterReason, sceneId, teleportTo));
+        player.sendPacket(new PacketPlayerEnterSceneNotify(player, teleportProperties));
 
-        if(teleportType != TeleportType.INTERNAL && teleportType != SCRIPT) {
+        if(teleportProperties.getTeleportType() != TeleportType.INTERNAL && teleportProperties.getTeleportType() != SCRIPT) {
             player.getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_ANY_MANUAL_TRANSPORT);
         }
         return true;
@@ -359,11 +377,75 @@ public class World implements Iterable<Player> {
     public boolean onTick() {
         if (this.getPlayerCount() == 0) return true;
         this.scenes.forEach((k, scene) -> scene.onTick());
+
+        // trigger game time tick for quests TODO maybe move it to onTick for QuestManager?
+        players.forEach(p -> p.getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_GAME_TIME_TICK,
+            getGameTimeHours() , // hours
+            0)); //days
+
+
+        // sync time every 10 seconds
+        if(tickCount%10 == 0){
+            players.forEach(p -> p.sendPacket(new PacketPlayerGameTimeNotify(p)));
+        }
+        // store updated world time every 60 seconds (ingame hour)
+        if(tickCount%60 == 0){
+            this.owner.updatePlayerGameTime(currentWorldTime);
+        }
+        tickCount++;
         return false;
     }
 
     public void close() {
 
+    }
+
+    public void changeTime(int time, int days) {
+        val currentTime = getGameTime();
+        var diff = time - currentTime;
+        if(diff < 0){
+            diff = 1440 + diff;
+        }
+        this.currentWorldTime += days * 1440 * 1000L + diff * 1000L;
+        this.owner.updatePlayerGameTime(currentWorldTime);
+        this.players.forEach(player -> player.getQuestManager().queueEvent(QuestContent.QUEST_CONTENT_GAME_TIME_TICK,
+            getGameTimeHours(), // hours
+            days)); //days
+    }
+
+    public int getGameTime() {
+        return (int)(getWorldTimeSeconds() % 1440);
+    }
+
+    public int getGameTimeHours() {
+        return getGameTime() / 60 ;
+    }
+
+    public long getGameTimeDays() {
+        return getWorldTimeSeconds() / 1440 ;
+    }
+
+    public void setPaused(boolean paused) {
+        getWorldTime();
+        if(this.isPaused != paused && !paused){
+            this.lastUpdateTime = System.currentTimeMillis();
+        }
+        isPaused = paused;
+        players.forEach(player -> player.setPaused(paused));
+        scenes.forEach((key, scene) -> scene.setPaused(paused));
+    }
+
+    public long getWorldTime() {
+        if(!isPaused) {
+            long newUpdateTime = System.currentTimeMillis();
+            this.currentWorldTime += (newUpdateTime - lastUpdateTime);
+            this.lastUpdateTime = newUpdateTime;
+        }
+        return currentWorldTime;
+    }
+
+    public long getWorldTimeSeconds() {
+        return getWorldTime()/1000;
     }
 
     @Override

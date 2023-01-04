@@ -1,6 +1,7 @@
 package emu.grasscutter.game.entity;
 
 import emu.grasscutter.game.player.Player;
+import emu.grasscutter.game.props.ElementType;
 import emu.grasscutter.game.props.FightProperty;
 import emu.grasscutter.game.props.LifeState;
 import emu.grasscutter.game.world.Scene;
@@ -12,6 +13,7 @@ import emu.grasscutter.net.proto.MotionInfoOuterClass.MotionInfo;
 import emu.grasscutter.net.proto.MotionStateOuterClass.MotionState;
 import emu.grasscutter.net.proto.SceneEntityInfoOuterClass.SceneEntityInfo;
 import emu.grasscutter.net.proto.VectorOuterClass.Vector;
+import emu.grasscutter.scripts.data.controller.EntityController;
 import emu.grasscutter.server.event.entity.EntityDamageEvent;
 import emu.grasscutter.server.event.entity.EntityDeathEvent;
 import emu.grasscutter.server.packet.send.PacketEntityFightPropUpdateNotify;
@@ -25,19 +27,23 @@ import lombok.Getter;
 import lombok.Setter;
 
 public abstract class GameEntity {
-    @Getter protected int id;
     @Getter private final Scene scene;
+    @Getter protected int id;
     @Getter @Setter private SpawnDataEntry spawnEntry;
 
     @Getter @Setter private int blockId;
     @Getter @Setter private int configId;
     @Getter @Setter private int groupId;
 
-    private MotionState moveState;
+    @Getter @Setter private MotionState motionState;
     @Getter @Setter private int lastMoveSceneTimeMs;
     @Getter @Setter private int lastMoveReliableSeq;
 
     @Getter @Setter private boolean lockHP;
+
+    // Lua controller for specific actions
+    @Getter @Setter private EntityController entityController;
+    @Getter private ElementType lastAttackType = ElementType.None;
 
     // Abilities
     private Object2FloatMap<String> metaOverrideMap;
@@ -45,12 +51,14 @@ public abstract class GameEntity {
 
     public GameEntity(Scene scene) {
         this.scene = scene;
-        this.moveState = MotionState.MOTION_STATE_NONE;
+        this.motionState = MotionState.MOTION_STATE_NONE;
     }
 
     public int getEntityType() {
         return this.getId() >> 24;
     }
+
+    public abstract int getEntityTypeId();
 
     public World getWorld() {
         return this.getScene().getWorld();
@@ -84,14 +92,6 @@ public abstract class GameEntity {
 
     public abstract Position getRotation();
 
-    public MotionState getMotionState() {
-        return moveState;
-    }
-
-    public void setMotionState(MotionState moveState) {
-        this.moveState = moveState;
-    }
-
     public void setFightProperty(FightProperty prop, float value) {
         this.getFightProperties().put(prop.getId(), value);
     }
@@ -121,11 +121,11 @@ public abstract class GameEntity {
 
     protected MotionInfo getMotionInfo() {
         MotionInfo proto = MotionInfo.newBuilder()
-                .setPos(this.getPosition().toProto())
-                .setRot(this.getRotation().toProto())
-                .setSpeed(Vector.newBuilder())
-                .setState(this.getMotionState())
-                .build();
+            .setPos(this.getPosition().toProto())
+            .setRot(this.getRotation().toProto())
+            .setSpeed(Vector.newBuilder())
+            .setState(this.getMotionState())
+            .build();
 
         return proto;
     }
@@ -151,17 +151,21 @@ public abstract class GameEntity {
     }
 
     public void damage(float amount) {
-        this.damage(amount, 0);
+        this.damage(amount, 0, ElementType.None);
     }
 
-    public void damage(float amount, int killerId) {
+    public void damage(float amount, ElementType attackType) {
+        this.damage(amount, 0, attackType);
+    }
+
+    public void damage(float amount, int killerId, ElementType attackType) {
         // Check if the entity has properties.
         if (this.getFightProperties() == null || !hasFightProperty(FightProperty.FIGHT_PROP_CUR_HP)) {
             return;
         }
 
         // Invoke entity damage event.
-        EntityDamageEvent event = new EntityDamageEvent(this, amount, this.getScene().getEntityById(killerId));
+        EntityDamageEvent event = new EntityDamageEvent(this, amount, attackType, this.getScene().getEntityById(killerId));
         event.call();
         if (event.isCanceled()) {
             return; // If the event is canceled, do not damage the entity.
@@ -173,13 +177,15 @@ public abstract class GameEntity {
             this.addFightProperty(FightProperty.FIGHT_PROP_CUR_HP, -(event.getDamage()));
         }
 
+        this.lastAttackType = attackType;
+
         // Check if dead
         boolean isDead = false;
         if (this.getFightProperty(FightProperty.FIGHT_PROP_CUR_HP) <= 0f) {
             this.setFightProperty(FightProperty.FIGHT_PROP_CUR_HP, 0f);
             isDead = true;
         }
-        callLuaHPEvent();
+        callLuaHPEvent(event);
 
         // Packets
         this.getScene().broadcastPacket(new PacketEntityFightPropUpdateNotify(this, FightProperty.FIGHT_PROP_CUR_HP));
@@ -190,10 +196,15 @@ public abstract class GameEntity {
         }
     }
 
-    public void callLuaHPEvent(){ }
+    public void callLuaHPEvent(EntityDamageEvent event) {
+        if (entityController != null) {
+            entityController.onBeHurt(this, event.getAttackElementType(), true);//todo is host handling
+        }
+    }
 
     /**
      * Move this entity to a new position.
+     *
      * @param position The new position.
      * @param rotation The new rotation.
      */
@@ -205,7 +216,8 @@ public abstract class GameEntity {
 
     /**
      * Called when a player interacts with this entity
-     * @param player Player that is interacting with this entity
+     *
+     * @param player      Player that is interacting with this entity
      * @param interactReq Interact request protobuf data
      */
     public void onInteract(Player player, GadgetInteractReq interactReq) {
@@ -223,14 +235,32 @@ public abstract class GameEntity {
 
     }
 
+    public void onTick(int sceneTime) {
+        if (entityController != null) {
+            entityController.onTimer(this, sceneTime);
+        }
+    }
+
+    public int onClientExecuteRequest(int param1, int param2, int param3) {
+        if (entityController != null) {
+            return entityController.onClientExecuteRequest(this, param1, param2, param3);
+        }
+        return 0;
+    }
+
     /**
      * Called when this entity dies
+     *
      * @param killerId Entity id of the entity that killed this entity
      */
     public void onDeath(int killerId) {
         // Invoke entity death event.
         EntityDeathEvent event = new EntityDeathEvent(this, killerId);
         event.call();
+
+        if (entityController != null) {
+            entityController.onDie(this, getLastAttackType());
+        }
     }
 
     public abstract SceneEntityInfo toProto();

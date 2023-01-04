@@ -1,4 +1,4 @@
-package emu.grasscutter.game.dungeons;
+package emu.grasscutter.game.dungeons.enums;
 
 import lombok.Getter;
 

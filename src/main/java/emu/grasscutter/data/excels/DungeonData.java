@@ -3,14 +3,15 @@ package emu.grasscutter.data.excels;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
-import emu.grasscutter.game.dungeons.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import emu.grasscutter.game.dungeons.enums.*;
 import lombok.Getter;
 
 import java.util.List;
 
 @ResourceType(name = "DungeonExcelConfigData.json")
 public class DungeonData extends GameResource {
+
+    @Getter(onMethod = @__(@Override))
 	private int id;
 	@Getter private int sceneId;
 	@Getter private int showLevel;
@@ -29,12 +30,8 @@ public class DungeonData extends GameResource {
     @Getter private int statueCostID;
     @Getter private int statueCostCount;
 
+    // not part of DungeonExcelConfigData
     @Getter private RewardPreviewData rewardPreviewData;
-
-	@Override
-	public int getId() {
-		return this.id;
-	}
 
     public DungeonType getType() {
         if (type == null) {

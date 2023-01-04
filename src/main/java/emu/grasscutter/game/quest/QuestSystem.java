@@ -1,17 +1,17 @@
 package emu.grasscutter.game.quest;
 
+import emu.grasscutter.Grasscutter;
+import emu.grasscutter.data.excels.QuestData.QuestAcceptCondition;
+import emu.grasscutter.data.excels.QuestData.QuestContentCondition;
+import emu.grasscutter.data.excels.QuestData.QuestExecParam;
 import emu.grasscutter.game.quest.conditions.BaseCondition;
 import emu.grasscutter.game.quest.content.BaseContent;
 import emu.grasscutter.game.quest.handlers.QuestExecHandler;
 import emu.grasscutter.server.game.BaseGameSystem;
 import emu.grasscutter.server.game.GameServer;
-
-import org.reflections.Reflections;
-
-import emu.grasscutter.Grasscutter;
-import emu.grasscutter.data.excels.QuestData.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.reflections.Reflections;
 
 @SuppressWarnings("unchecked")
 public class QuestSystem extends BaseGameSystem {
@@ -47,13 +47,13 @@ public class QuestSystem extends BaseGameSystem {
     public <T> void registerPacketHandler(Int2ObjectMap<T> map, Class<? extends T> handlerClass) {
         try {
             int value = 0;
-            if(handlerClass.isAnnotationPresent(QuestValueExec.class)) {
+            if (handlerClass.isAnnotationPresent(QuestValueExec.class)) {
                 QuestValueExec opcode = handlerClass.getAnnotation(QuestValueExec.class);
                 value = opcode.value().getValue();
-            } else if(handlerClass.isAnnotationPresent(QuestValueContent.class)) {
+            } else if (handlerClass.isAnnotationPresent(QuestValueContent.class)) {
                 QuestValueContent opcode = handlerClass.getAnnotation(QuestValueContent.class);
                 value = opcode.value().getValue();
-            } else if(handlerClass.isAnnotationPresent(QuestValueCond.class)) {
+            } else if (handlerClass.isAnnotationPresent(QuestValueCond.class)) {
                 QuestValueCond opcode = handlerClass.getAnnotation(QuestValueCond.class);
                 value = opcode.value().getValue();
             } else {
@@ -64,7 +64,7 @@ public class QuestSystem extends BaseGameSystem {
                 return;
             }
 
-            map.put(value, handlerClass.newInstance());
+            map.put(value, handlerClass.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,7 +103,7 @@ public class QuestSystem extends BaseGameSystem {
         }
 
         QuestManager.eventExecutor.submit(() -> {
-            if(!handler.execute(quest, execParam, params)){
+            if (!handler.execute(quest, execParam, params)) {
                 Grasscutter.getLogger().debug("exec trigger failed {} at {}", execParam.getType().getValue(), quest.getQuestData());
             }
         });

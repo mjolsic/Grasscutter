@@ -5,16 +5,34 @@ import emu.grasscutter.game.props.FightProperty;
 import emu.grasscutter.game.quest.enums.QuestContent;
 import emu.grasscutter.game.world.Scene;
 import emu.grasscutter.scripts.data.ScriptArgs;
+import emu.grasscutter.server.event.entity.EntityDamageEvent;
+import emu.grasscutter.utils.Position;
+import lombok.Getter;
 
 import static emu.grasscutter.scripts.constants.EventType.EVENT_SPECIFIC_GADGET_HP_CHANGE;
 
 public abstract class EntityBaseGadget extends GameEntity {
+    @Getter(onMethod = @__(@Override))
+    protected final Position position;
+    @Getter(onMethod = @__(@Override))
+    protected final Position rotation;
 
     public EntityBaseGadget(Scene scene) {
+        this(scene, null, null);
+    }
+
+    public EntityBaseGadget(Scene scene, Position position, Position rotation) {
         super(scene);
+        this.position = position != null ? position.clone() : new Position();
+        this.rotation = rotation != null ? rotation.clone() : new Position();
     }
 
     public abstract int getGadgetId();
+
+    @Override
+    public int getEntityTypeId() {
+        return getGadgetId();
+    }
 
     @Override
     public void onDeath(int killerId) {
@@ -24,7 +42,8 @@ public abstract class EntityBaseGadget extends GameEntity {
     }
 
     @Override
-    public void callLuaHPEvent() {
+    public void callLuaHPEvent(EntityDamageEvent event) {
+        super.callLuaHPEvent(event);
         getScene().getScriptManager().callEvent(new ScriptArgs(EVENT_SPECIFIC_GADGET_HP_CHANGE, getConfigId(), getGadgetId())
             .setSourceEntityId(getId())
             .setParam3((int) this.getFightProperty(FightProperty.FIGHT_PROP_CUR_HP))

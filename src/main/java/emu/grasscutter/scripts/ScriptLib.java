@@ -4,6 +4,7 @@ import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.game.activity.ActivityManager;
 import emu.grasscutter.game.dungeons.challenge.DungeonChallenge;
+import emu.grasscutter.game.dungeons.challenge.enums.FatherChallengeProperty;
 import emu.grasscutter.game.dungeons.challenge.factory.ChallengeFactory;
 import emu.grasscutter.game.entity.*;
 import emu.grasscutter.game.entity.gadget.GadgetWorktop;
@@ -29,6 +30,7 @@ import org.luaj.vm2.LuaValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static emu.grasscutter.game.props.EnterReason.Lua;
@@ -40,10 +42,13 @@ public class ScriptLib {
 	private final FastThreadLocal<SceneScriptManager> sceneScriptManager;
 	private final FastThreadLocal<SceneGroup> currentGroup;
 	private final FastThreadLocal<ScriptArgs> callParams;
+    private final FastThreadLocal<GameEntity> currentEntity;
+
 	public ScriptLib() {
 		this.sceneScriptManager = new FastThreadLocal<>();
 		this.currentGroup = new FastThreadLocal<>();
 		this.callParams = new FastThreadLocal<>();
+		this.currentEntity = new FastThreadLocal<>();
 	}
 
 	public void setSceneScriptManager(SceneScriptManager sceneScriptManager){
@@ -80,6 +85,17 @@ public class ScriptLib {
 	public void removeCurrentGroup(){
 		this.currentGroup.remove();
 	}
+
+
+    public void setCurrentEntity(GameEntity currentGroup){
+        this.currentEntity.set(currentGroup);
+    }
+    public void removeCurrentEntity(){
+        this.currentEntity.remove();
+    }
+    public Optional<GameEntity> getCurrentEntity(){
+        return Optional.of(this.currentEntity.get());
+    }
 
 	public int SetGadgetStateByConfigId(int configId, int gadgetState) {
 		logger.debug("[LUA] Call SetGadgetStateByConfigId with {},{}",
@@ -424,7 +440,7 @@ public class ScriptLib {
 	}
 
     private void printLog(String source, String msg){
-        var currentGroup = getCurrentGroup().orElseGet(null);
+        var currentGroup = this.currentGroup.getIfExists();
         if(currentGroup!=null) {
             logger.info("[LUA] {} {} {}", source, currentGroup.id, msg);
         } else {
@@ -773,6 +789,12 @@ public class ScriptLib {
     }
     public int StartFatherChallenge(int var1){
         logger.warn("[LUA] Call unimplemented StartFatherChallenge with {}", var1);
+        //TODO implement
+        return 0;
+    }
+    public int ModifyFatherChallengeProperty(int challengeId, int propertyTypeIndex, int value){
+        val propertyType = FatherChallengeProperty.values()[propertyTypeIndex];
+        logger.warn("[LUA] Call unimplemented ModifyFatherChallengeProperty with {} {} {}", challengeId, propertyType.name(), value);
         //TODO implement
         return 0;
     }
@@ -1391,5 +1413,100 @@ public class ScriptLib {
         }
 
         return result;
+    }
+
+    public int GetGameHour(){
+        return getSceneScriptManager().getScene().getWorld().getGameTimeHours();
+    }
+
+    /**
+     * Methods used in EntityControllers
+      */
+
+    @Nullable
+    public EntityGadget getCurrentEntityGadget(){
+        val entity = currentEntity.getIfExists();
+        if(entity instanceof EntityGadget){
+            return (EntityGadget) entity;
+        }
+        return null;
+    }
+
+    public int SetGadgetState(int gadgetState) {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        gadget.updateState(gadgetState);
+        return 0;
+    }
+
+    public int GetGadgetState(int gadgetState) {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getState();
+    }
+
+    public int ResetGadgetState(int gadgetState) {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        gadget.getPosition().set(gadget.getBornPos());
+        gadget.getRotation().set(gadget.getBornRot());
+        gadget.setStartValue(0);
+        gadget.setStopValue(0);
+        gadget.updateState(gadgetState);
+        return 0;
+    }
+
+    public int SetGearStartValue(int startValue) {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        gadget.setStartValue(startValue);
+        return 0;
+    }
+
+    public int GetGearStartValue() {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getStartValue();
+    }
+
+    public int SetGearStopValue(int startValue) {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        gadget.setStopValue(startValue);
+        return 0;
+    }
+
+    public int GetGearStopValue() {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getStopValue();
+    }
+
+    public int GetGadgetStateBeginTime() {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getTicksSinceChange();
+    }
+
+    public int GetContextGadgetConfigId() {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getConfigId();
+    }
+
+    public int GetContextGroupId() {
+        EntityGadget gadget = getCurrentEntityGadget();
+        if(gadget == null) return -1;
+
+        return gadget.getGroupId();
     }
 }

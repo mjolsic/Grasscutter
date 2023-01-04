@@ -81,6 +81,8 @@ public enum QuestContent implements QuestTrigger {
     QUEST_CONTENT_IRODORI_FINISH_FLOWER_COMBINATION (151),// missing, finish
     QUEST_CONTENT_IRODORI_POETRY_REACH_MIN_PROGRESS (152),// missing, finish
     QUEST_CONTENT_IRODORI_POETRY_FINISH_FILL_POETRY (153),// missing, finish
+    QUEST_CONTENT_ACTIVITY_TRIGGER_UPDATE(154), // missing
+    QUEST_CONTENT_GADGET_STATE_CHANGE(155), // missing
     QUEST_CONTENT_UNKNOWN (9999);
 
     private final int value;

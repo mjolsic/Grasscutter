@@ -3,6 +3,7 @@ package emu.grasscutter.scripts.data;
 import emu.grasscutter.Grasscutter;
 import emu.grasscutter.scripts.ScriptLoader;
 import emu.grasscutter.utils.Position;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.luaj.vm2.LuaValue;
@@ -35,6 +36,7 @@ public class SceneGroup {
     public SceneBusiness business;
     public SceneGarbage garbages;
     public SceneInitConfig init_config;
+    @Getter public boolean dynamic_load;
 
     private transient boolean loaded; // Not an actual variable in the scripts either
     private transient CompiledScript script;
@@ -104,7 +106,7 @@ public class SceneGroup {
             this.gadgets.values().forEach(m -> m.group = this);
 
             this.triggers = ScriptLoader.getSerializer().toList(SceneTrigger.class, this.bindings.get("triggers")).stream()
-                    .collect(Collectors.toMap(x -> x.name, y -> y, (a, b) -> a));
+                    .collect(Collectors.toMap(SceneTrigger::getName, y -> y, (a, b) -> a));
             this.triggers.values().forEach(t -> t.currentGroup = this);
 
             this.suites = ScriptLoader.getSerializer().toList(SceneSuite.class, this.bindings.get("suites"));

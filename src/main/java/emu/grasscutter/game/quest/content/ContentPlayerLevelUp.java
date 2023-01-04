@@ -10,6 +10,6 @@ import static emu.grasscutter.game.quest.enums.QuestContent.QUEST_CONTENT_PLAYER
 public class ContentPlayerLevelUp extends BaseContent {
     @Override
     public boolean execute(GameQuest quest, QuestData.QuestContentCondition condition, String paramStr, int... params) {
-        return condition.getCount() == params[0];
+        return quest.getOwner().getLevel() >= condition.getCount();
     }
 }

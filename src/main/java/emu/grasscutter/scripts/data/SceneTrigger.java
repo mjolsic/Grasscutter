@@ -1,15 +1,19 @@
 package emu.grasscutter.scripts.data;
 
-import lombok.Setter;
+import lombok.*;
 
 @Setter
+@Getter
+@NoArgsConstructor
+// todo find way to deserialize from lua with final fields, maybe with the help of Builder?
 public class SceneTrigger {
-	public String name;
-	public int config_id;
-	public int event;
-	public String source;
-	public String condition;
-	public String action;
+	private String name;
+    private int config_id;
+    private int event;
+    private int trigger_count = 1;
+    private String source;
+    private String condition;
+    private String action;
 
 	public transient SceneGroup currentGroup;
 	@Override
@@ -34,6 +38,7 @@ public class SceneTrigger {
 				", source='" + source + '\'' +
 				", condition='" + condition + '\'' +
 				", action='" + action + '\'' +
+                ", trigger_count='" + trigger_count + '\'' +
 				'}';
 	}
 }

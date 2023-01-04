@@ -4,8 +4,10 @@ import emu.grasscutter.command.Command;
 import emu.grasscutter.command.CommandHandler;
 import emu.grasscutter.game.entity.*;
 import emu.grasscutter.game.player.Player;
+import emu.grasscutter.game.props.ElementType;
 import emu.grasscutter.game.props.FightProperty;
 import emu.grasscutter.game.world.Scene;
+import emu.grasscutter.server.event.entity.EntityDamageEvent;
 import emu.grasscutter.server.packet.send.PacketEntityFightPropUpdateNotify;
 import lombok.Setter;
 
@@ -95,8 +97,10 @@ public final class EntityCommand implements CommandHandler {
         }
         if (param.hp != -1) {
             float targetHp = param.hp == 0 ? Float.MAX_VALUE : param.hp;
+            float oldHp = entity.getFightProperty(FightProperty.FIGHT_PROP_CUR_HP);
             setFightProperty(entity, FightProperty.FIGHT_PROP_CUR_HP, targetHp, changedFields);
-            callHPEvents(entity);
+            EntityDamageEvent event = new EntityDamageEvent(entity, oldHp-targetHp, ElementType.None, null);
+            callHPEvents(entity, event);
         }
         if (param.atk != -1) {
             setFightProperty(entity, FightProperty.FIGHT_PROP_ATTACK, param.atk, changedFields);
@@ -111,8 +115,8 @@ public final class EntityCommand implements CommandHandler {
         }
     }
 
-    private void callHPEvents(GameEntity entity){
-        entity.callLuaHPEvent();
+    private void callHPEvents(GameEntity entity, EntityDamageEvent event){
+        entity.callLuaHPEvent(event);
     }
 
     private void setFightProperty(GameEntity entity, FightProperty property, float value, List<FightProperty> modifiedProps){

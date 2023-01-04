@@ -5,10 +5,7 @@ import emu.grasscutter.GameConstants;
 import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.binout.ConfigLevelEntity;
-import emu.grasscutter.data.excels.AvatarData;
-import emu.grasscutter.data.excels.PlayerLevelData;
-import emu.grasscutter.data.excels.TrialAvatarData;
-import emu.grasscutter.data.excels.WeatherData;
+import emu.grasscutter.data.excels.*;
 import emu.grasscutter.database.DatabaseHelper;
 import emu.grasscutter.game.Account;
 import emu.grasscutter.game.CoopRequest;
@@ -43,6 +40,7 @@ import emu.grasscutter.game.managers.mapmark.MapMarksManager;
 import emu.grasscutter.game.managers.stamina.StaminaManager;
 import emu.grasscutter.game.props.*;
 import emu.grasscutter.game.quest.QuestManager;
+import emu.grasscutter.game.quest.enums.QuestCond;
 import emu.grasscutter.game.quest.enums.QuestContent;
 import emu.grasscutter.game.shop.ShopLimit;
 import emu.grasscutter.game.tower.TowerData;
@@ -123,6 +121,7 @@ public class Player {
     @Getter private Set<Integer> nameCardList;
     @Getter private Set<Integer> flyCloakList;
     @Getter private Set<Integer> costumeList;
+    @Getter private Set<Integer> personalLineList;
     @Getter @Setter private Set<Integer> rewardedLevels;
     @Getter @Setter private Set<Integer> realmList;
     @Getter private Set<Integer> unlockedForgingBlueprints;
@@ -206,6 +205,9 @@ public class Player {
     @Getter @Setter private int nextResinRefresh;
     @Getter @Setter private int lastDailyReset;
     @Getter private transient MpSettingType mpSetting = MpSettingType.MP_SETTING_TYPE_ENTER_AFTER_APPLY;  // TODO
+    @Getter private long playerGameTime = 0;
+
+    @Getter private PlayerProgress playerProgress;
 
     @Deprecated
     @SuppressWarnings({"rawtypes", "unchecked"}) // Morphia only!
@@ -235,6 +237,7 @@ public class Player {
         this.nameCardList = new HashSet<>();
         this.flyCloakList = new HashSet<>();
         this.costumeList = new HashSet<>();
+        this.personalLineList = new HashSet<>();
         this.towerData = new TowerData();
         this.collectionRecordStore = new PlayerCollectionRecords();
         this.unlockedForgingBlueprints = new HashSet<>();
@@ -251,6 +254,7 @@ public class Player {
         this.unlockedSceneAreas = new HashMap<>();
         this.unlockedScenePoints = new HashMap<>();
         this.chatEmojiIdList = new ArrayList<>();
+        this.playerProgress = new PlayerProgress();
 
         this.attackResults = new LinkedBlockingQueue<>();
         this.coopRequests = new Int2ObjectOpenHashMap<>();
@@ -311,6 +315,13 @@ public class Player {
         this.furnitureManager = new FurnitureManager(this);
         this.cookingManager = new CookingManager(this);
         this.cookingCompoundManager=new CookingCompoundManager(this);
+    }
+
+    public void updatePlayerGameTime(long gameTime){
+        if(playerGameTime == gameTime) return;
+
+        this.playerGameTime = gameTime;
+        this.save();
     }
 
     public int getUid() {
@@ -808,7 +819,7 @@ public class Player {
     }
 
     public boolean addTrialAvatarForQuest(int trialAvatarId, GrantReason reason, int questMainId){
-        // TODO, other trial avatar like activity and element trial dungeon might have 
+        // TODO, other trial avatar like activity and element trial dungeon might have
         // completely different scenario, this function is currently used for Quest Exec only
         TrialAvatarData trialAvatar = GameData.getTrialAvatarDataMap().get(trialAvatarId);
         if (trialAvatar == null) return false;
@@ -830,7 +841,7 @@ public class Player {
         sendPacket(new PacketAvatarAddNotify(avatar, false));
         // add to avatar to temporary trial team
         getTeamManager().addAvatarToTrialTeam(avatar);
-        // Packet, mimic official server behaviour, neccessary to stop player from modifying team 
+        // Packet, mimic official server behaviour, neccessary to stop player from modifying team
         sendPacket(new PacketAvatarTeamUpdateNotify(this));
         return true;
     }
@@ -860,6 +871,11 @@ public class Player {
     public void addCostume(int costumeId) {
         this.getCostumeList().add(costumeId);
         this.sendPacket(new PacketAvatarGainCostumeNotify(costumeId));
+    }
+
+    public void addPersonalLine(int personalLineId) {
+        this.getPersonalLineList().add(personalLineId);
+        session.getPlayer().getQuestManager().queueEvent(QuestCond.QUEST_COND_PERSONAL_LINE_UNLOCK, personalLineId);
     }
 
     public void addNameCard(int nameCardId) {

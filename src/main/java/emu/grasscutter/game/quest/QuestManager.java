@@ -153,6 +153,11 @@ public class QuestManager extends BasePlayerManager {
         return getMainQuests().get(mainQuestId);
     }
 
+    public GameMainQuest getMainQuestByTalkId(int talkId) {
+        int mainQuestId = GameData.getQuestTalkMap().getOrDefault(talkId, talkId / 100);
+        return getMainQuestById(mainQuestId);
+    }
+
     public GameQuest getQuestById(int questId) {
         QuestData questConfig = GameData.getQuestDataMap().get(questId);
         if (questConfig == null) {

@@ -3,6 +3,8 @@ package emu.grasscutter.server.packet.send;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.player.Player.SceneLoadState;
 import emu.grasscutter.game.props.EnterReason;
+import emu.grasscutter.game.world.World;
+import emu.grasscutter.game.world.data.TeleportProperties;
 import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.packet.PacketOpcodes;
 import emu.grasscutter.net.proto.EnterTypeOuterClass.EnterType;
@@ -38,9 +40,21 @@ public class PacketPlayerEnterSceneNotify extends BasePacket {
     public PacketPlayerEnterSceneNotify(Player player, EnterType type, EnterReason reason, int newScene, Position newPos) {
         this(player, player, type, reason, newScene, newPos);
     }
+    public PacketPlayerEnterSceneNotify(Player player, TeleportProperties teleportProperties) {
+        this(player, player, teleportProperties);
+    }
+
+    public PacketPlayerEnterSceneNotify(Player player, Player target, EnterType type, EnterReason reason, int newScene, Position newPos) {
+        this(player, target, TeleportProperties.builder()
+            .enterType(type)
+            .enterReason(reason)
+            .sceneId(newScene)
+            .teleportTo(newPos)
+            .build());
+    }
 
     // Teleport or go somewhere
-    public PacketPlayerEnterSceneNotify(Player player, Player target, EnterType type, EnterReason reason, int newScene, Position newPos) {
+    public PacketPlayerEnterSceneNotify(Player player, Player target, TeleportProperties teleportProperties) {
         super(PacketOpcodes.PlayerEnterSceneNotify);
 
         player.setSceneLoadState(SceneLoadState.LOADING);
@@ -49,16 +63,16 @@ public class PacketPlayerEnterSceneNotify extends BasePacket {
         PlayerEnterSceneNotify.Builder proto = PlayerEnterSceneNotify.newBuilder()
                 .setPrevSceneId(player.getSceneId())
                 .setPrevPos(player.getPosition().toProto())
-                .setSceneId(newScene)
-                .setPos(newPos.toProto())
+                .setSceneId(teleportProperties.getSceneId())
+                .setPos(teleportProperties.getTeleportTo().toProto())
                 .setSceneBeginTime(System.currentTimeMillis())
-                .setType(type)
+                .setType(teleportProperties.getEnterType())
                 .setTargetUid(target.getUid())
                 .setEnterSceneToken(player.getEnterSceneToken())
                 .setWorldLevel(target.getWorld().getWorldLevel())
-                .setEnterReason(reason.getValue())
+                .setEnterReason(teleportProperties.getEnterReason().getValue())
                 .setWorldType(1)
-                .setSceneTransaction(newScene + "-" + target.getUid() + "-" + (int) (System.currentTimeMillis() / 1000) + "-" + 18402);
+                .setSceneTransaction(teleportProperties.getSceneId() + "-" + target.getUid() + "-" + (int) (System.currentTimeMillis() / 1000) + "-" + 18402);
 
         this.setData(proto);
     }

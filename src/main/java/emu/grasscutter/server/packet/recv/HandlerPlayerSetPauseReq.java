@@ -10,14 +10,13 @@ import emu.grasscutter.server.packet.send.PacketPlayerSetPauseRsp;
 
 @Opcodes(PacketOpcodes.PlayerSetPauseReq)
 public class HandlerPlayerSetPauseReq extends PacketHandler {
-	
+
 	@Override
 	public void handle(GameSession session, byte[] header, byte[] payload) throws Exception {
-		PacketHead head = PacketHead.parseFrom(header);
 		PlayerSetPauseReq req = PlayerSetPauseReq.parseFrom(payload);
-		
-		session.send(new PacketPlayerSetPauseRsp(head.getClientSequenceId()));
-		session.getPlayer().setPaused(req.getIsPaused());
+        session.getPlayer().getWorld().setPaused(req.getIsPaused());
+
+		session.send(new PacketPlayerSetPauseRsp());
 	}
 
 }

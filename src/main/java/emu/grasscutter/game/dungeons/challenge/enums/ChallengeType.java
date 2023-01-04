@@ -1,4 +1,4 @@
-package emu.grasscutter.game.dungeons.challenge;
+package emu.grasscutter.game.dungeons.challenge.enums;
 
 public enum ChallengeType {
     CHALLENGE_NONE, //00
@@ -16,12 +16,12 @@ public enum ChallengeType {
     //unknown if position and time match from here on
     CHALLENGE_TRIGGER2_AVOID_TRIGGER1,
     CHALLENGE_FATHER_SUCC_IN_TIME,
-    CHALLENGE_TRIGGER_COUNT,
     CHALLENGE_MONSTER_DAMAGE_COUNT,
     CHALLENGE_ELEMENT_REACTION_COUNT,
     CHALLENGE_FREEZE_ENEMY_IN_TIME,
     CHALLENGE_CRYSTAL_ELEMENT_REACTION_COUNT,
     CHALLENGE_SHEILD_ABSORB_DAMAGE_COUNT,
     CHALLENGE_SWIRL_ELEMENT_REACTION_COUNT,
-    CHALLENGE_DIE_LESS_IN_TIME
+    CHALLENGE_DIE_LESS_IN_TIME,
+    CHALLENGE_TRIGGER_COUNT,
 }

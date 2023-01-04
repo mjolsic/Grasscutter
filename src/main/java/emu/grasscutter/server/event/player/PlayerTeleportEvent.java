@@ -1,25 +1,25 @@
 package emu.grasscutter.server.event.player;
 
 import emu.grasscutter.game.player.Player;
+import emu.grasscutter.game.world.World;
+import emu.grasscutter.game.world.data.TeleportProperties;
 import emu.grasscutter.server.event.Cancellable;
 import emu.grasscutter.server.event.types.PlayerEvent;
 import emu.grasscutter.utils.Position;
 
 public final class PlayerTeleportEvent extends PlayerEvent implements Cancellable {
-    private final TeleportType type;
     private final Position from;
-    private Position to;
+    TeleportProperties teleportProperties;
 
-    public PlayerTeleportEvent(Player player, TeleportType type, Position from, Position to) {
+    public PlayerTeleportEvent(Player player, TeleportProperties teleportProperties, Position from) {
         super(player);
 
-        this.type = type;
+        this.teleportProperties = teleportProperties;
         this.from = from;
-        this.to = to;
     }
 
     public TeleportType getTeleportType() {
-        return this.type;
+        return this.teleportProperties.getTeleportType();
     }
 
     public Position getSource() {
@@ -27,11 +27,11 @@ public final class PlayerTeleportEvent extends PlayerEvent implements Cancellabl
     }
 
     public Position getDestination() {
-        return this.to;
+        return this.teleportProperties.getTeleportTo();
     }
 
     public void setDestination(Position to) {
-        this.to = to;
+        this.teleportProperties.setTeleportTo(to);
     }
 
     public enum TeleportType {

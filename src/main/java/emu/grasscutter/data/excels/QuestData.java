@@ -1,8 +1,8 @@
 package emu.grasscutter.data.excels;
 
-import java.util.List;
-
 import com.google.gson.annotations.SerializedName;
+import emu.grasscutter.Grasscutter;
+import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 import emu.grasscutter.game.quest.enums.*;
@@ -11,81 +11,41 @@ import lombok.experimental.FieldDefaults;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 @ResourceType(name = "QuestExcelConfigData.json")
 @Getter
 @ToString
 public class QuestData extends GameResource {
-    private int subId;
-    private int mainId;
-    private int order;
-    private long descTextMapHash;
+    @Getter private int subId;
+    @Getter private int mainId;
+    @Getter private int order;
+    @Getter private long descTextMapHash;
 
-    private boolean finishParent;
-    private boolean isRewind;
+    @Getter private boolean finishParent;
+    @Getter private boolean isRewind;
 
-    private LogicType acceptCondComb;
-    private LogicType finishCondComb;
-    private LogicType failCondComb;
+    @Getter private LogicType acceptCondComb;
+    @Getter private LogicType finishCondComb;
+    @Getter private LogicType failCondComb;
 
-    private List<QuestAcceptCondition> acceptCond;
-    private List<QuestContentCondition> finishCond;
-    private List<QuestContentCondition> failCond;
-    private List<QuestExecParam> beginExec;
-    private List<QuestExecParam> finishExec;
-    private List<QuestExecParam> failExec;
-    private Guide guide;
-    private List<Integer> trialAvatarList;
+    @Getter private List<QuestAcceptCondition> acceptCond;
+    @Getter private List<QuestContentCondition> finishCond;
+    @Getter private List<QuestContentCondition> failCond;
+    @Getter private List<QuestExecParam> beginExec;
+    @Getter private List<QuestExecParam> finishExec;
+    @Getter private List<QuestExecParam> failExec;
+    @Getter private Guide guide;
+    @Getter private List<Integer> trialAvatarList;
+
+    public static String questConditionKey(@Nonnull Enum<?> type, int firstParam, @Nullable String paramsStr) {
+        return type.name() + firstParam + (paramsStr != null ? paramsStr : "");
+    }
 
     //ResourceLoader not happy if you remove getId() ~~
     public int getId() {
         return subId;
-    }
-    //Added getSubId() for clarity
-    public int getSubId() {return subId;}
-
-    public int getMainId() {
-        return mainId;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public long getDescTextMapHash() {
-        return descTextMapHash;
-    }
-
-    public boolean finishParent() {
-        return finishParent;
-    }
-
-    public boolean isRewind() {
-        return isRewind;
-    }
-
-    public LogicType getAcceptCondComb() {
-        return acceptCondComb == null ? LogicType.LOGIC_NONE : acceptCondComb;
-    }
-
-    public List<QuestAcceptCondition> getAcceptCond() {
-        return acceptCond;
-    }
-
-    public LogicType getFinishCondComb() {
-        return finishCondComb == null ? LogicType.LOGIC_NONE : finishCondComb;
-    }
-
-    public List<QuestContentCondition> getFinishCond() {
-        return finishCond;
-    }
-
-    public LogicType getFailCondComb() {
-        return failCondComb == null ? LogicType.LOGIC_NONE : failCondComb;
-    }
-
-    public List<QuestContentCondition> getFailCond() {
-        return failCond;
     }
 
     public void onLoad() {
@@ -96,11 +56,44 @@ public class QuestData extends GameResource {
         this.beginExec = beginExec.stream().filter(p -> p.type != null).toList();
         this.finishExec = finishExec.stream().filter(p -> p.type != null).toList();
         this.failExec = failExec.stream().filter(p -> p.type != null).toList();
+
+        if (this.acceptCondComb == null)
+            this.acceptCondComb = LogicType.LOGIC_NONE;
+
+        if (this.finishCondComb == null)
+            this.finishCondComb = LogicType.LOGIC_NONE;
+
+        if (this.failCondComb == null)
+            this.failCondComb = LogicType.LOGIC_NONE;
+
+        addToCache();
+    }
+
+    private void addToCache() {
+        if (this.acceptCond == null) {
+            Grasscutter.getLogger().warn("missing AcceptConditions for quest {}", getSubId());
+            return;
+        }
+        val cacheMap = GameData.getBeginCondQuestMap();
+        if (getAcceptCond().isEmpty()) {
+            val list = cacheMap.computeIfAbsent(QuestData.questConditionKey(QuestCond.QUEST_COND_NONE, 0, null), e -> new ArrayList<>());
+            list.add(this);
+        } else {
+            getAcceptCond().forEach(questCondition -> {
+                if (questCondition.getType() == null) {
+                    Grasscutter.getLogger().warn("null accept type for quest {}", getSubId());
+                    return;
+                }
+                val key = questCondition.asKey();
+                val list = cacheMap.computeIfAbsent(key, e -> new ArrayList<>());
+                list.add(this);
+            });
+        }
     }
 
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public class QuestExecParam {
+    public static class QuestExecParam {
         @SerializedName("_type")
         QuestExec type;
         @SerializedName("_param")
@@ -109,8 +102,9 @@ public class QuestData extends GameResource {
         String count;
     }
 
-    public static class QuestAcceptCondition extends QuestCondition<QuestCond>{ }
-    public static class QuestContentCondition extends QuestCondition<QuestContent>{ }
+    public static class QuestAcceptCondition extends QuestCondition<QuestCond> { }
+
+    public static class QuestContentCondition extends QuestCondition<QuestContent> { }
 
     @Data
     public static class QuestCondition<TYPE extends Enum<?> & QuestTrigger> {
@@ -123,8 +117,8 @@ public class QuestData extends GameResource {
         @SerializedName("_count")
         private int count;
 
-        public String asKey(){
-            return questConditionKey(getType(),getParam()[0],getParamStr());
+        public String asKey() {
+            return questConditionKey(getType(), getParam()[0], getParamStr());
         }
     }
 
@@ -133,9 +127,5 @@ public class QuestData extends GameResource {
         private String type;
         private List<String> param;
         private int guideScene;
-    }
-
-    public static String questConditionKey(@Nonnull Enum<?> type, int firstParam, @Nullable String paramsStr){
-        return type.name() + firstParam + (paramsStr != null ? paramsStr:"");
     }
 }
