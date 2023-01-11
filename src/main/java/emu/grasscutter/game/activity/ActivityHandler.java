@@ -71,6 +71,9 @@ public abstract class ActivityHandler {
 
     public ActivityInfoOuterClass.ActivityInfo toProto(PlayerActivityData playerActivityData, ActivityConditionExecutor conditionExecutor){
         var proto = ActivityInfoOuterClass.ActivityInfo.newBuilder();
+
+        onProtoBuild(playerActivityData, proto); // this allows specific activities modify player data first before checking for conditionds below
+
         proto.setActivityId(activityConfigItem.getActivityId())
             .setActivityType(activityConfigItem.getActivityType())
             .setScheduleId(activityConfigItem.getScheduleId())
@@ -83,8 +86,6 @@ public abstract class ActivityHandler {
         if (playerActivityData != null){
             proto.addAllWatcherInfoList(playerActivityData.getAllWatcherInfoList());
         }
-
-        onProtoBuild(playerActivityData, proto);
 
         return proto.build();
     }

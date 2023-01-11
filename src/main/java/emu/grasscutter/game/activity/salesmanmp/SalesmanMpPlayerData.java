@@ -4,6 +4,7 @@ import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.excels.ActivitySalesmanData;
 import emu.grasscutter.net.proto.SalesmanActivityDetailInfoOuterClass.SalesmanActivityDetailInfo;
 import emu.grasscutter.net.proto.SalesmanStatusTypeOuterClass.SalesmanStatusType;
+import emu.grasscutter.utils.Utils;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,8 +12,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.List;
 import java.util.HashSet;
 
 @Data
@@ -28,6 +29,7 @@ public class SalesmanMpPlayerData {
     boolean isTodayHasDelivered;
     boolean hasTakenSpecialReward;
     Set<Integer> receivedReward;
+    int lastRefreshTime;
 
     public static SalesmanMpPlayerData create(int scheduleId) {
         ActivitySalesmanData data = GameData.getActivitySalesmanDataMap().get(scheduleId);
@@ -35,9 +37,9 @@ public class SalesmanMpPlayerData {
             .specialRewardPreviewId(data.getSpecialReward().getPreviewId())
             .status(SalesmanStatusType.SALESMAN_STATUS_TYPE_UNSTARTED_VALUE)
             .condDayCount(Integer.parseInt(data.getSpecialReward().getObtainParam()))
-            .dayRewardId(data.getNormalRewardIdList().get(
-                data.getSpecialProbList().indexOf(Collections.max(data.getSpecialProbList()))))
+            .dayRewardId(getRandomNormalDayReward(data, List.of()))
             .deliverCount(0)
+            .lastRefreshTime(Utils.getCurrentSeconds())
             .dayIndex(1)
             .isTodayHasDelivered(false)
             .hasTakenSpecialReward(false)
@@ -62,6 +64,26 @@ public class SalesmanMpPlayerData {
 
     public void getSpecialReward() {
         setHasTakenSpecialReward(true);
+    }
+
+    public static int getRandomNormalDayReward(ActivitySalesmanData data, Collection<Integer> receivedReward) {
+        List<Integer> remainingReward = data.getNormalRewardIdList().stream()
+            .filter(reward -> !receivedReward.contains(reward)).toList();
+
+        // return 0 if all the normal day reward is taken
+        return remainingReward.isEmpty() ? 0 : Utils.drawRandomListElement(remainingReward);
+    }
+
+    public void resetDayReward(int scheduleId) {
+        ActivitySalesmanData data = GameData.getActivitySalesmanDataMap().get(scheduleId);
+        if (data == null) return;
+
+        int newReward = getRandomNormalDayReward(data, getReceivedReward());
+        setDayRewardId(newReward);
+        setTodayHasDelivered(newReward == 0 ? true : false); // if no more reward to take
+        setDayIndex(getDayIndex()+1);
+        setStatus(SalesmanStatusType.SALESMAN_STATUS_TYPE_UNSTARTED_VALUE);
+        setLastRefreshTime(Utils.getCurrentSeconds());
     }
 
     public SalesmanActivityDetailInfo toProto() {

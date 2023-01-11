@@ -1,6 +1,5 @@
 package emu.grasscutter.game.activity.salesmanmp;
 
-import emu.grasscutter.Grasscutter;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.common.ItemParamData;
 import emu.grasscutter.data.excels.ActivitySalesmanData;
@@ -10,15 +9,18 @@ import emu.grasscutter.data.excels.RewardPreviewData;
 import emu.grasscutter.game.activity.ActivityHandler;
 import emu.grasscutter.game.activity.GameActivity;
 import emu.grasscutter.game.activity.PlayerActivityData;
-import emu.grasscutter.game.inventory.GameItem;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.props.ActivityType;
 import emu.grasscutter.game.props.ActionReason;
 import emu.grasscutter.net.proto.ActivityInfoOuterClass.ActivityInfo;
 import emu.grasscutter.net.proto.RetcodeOuterClass.Retcode;
-import emu.grasscutter.net.proto.SalesmanActivityDetailInfoOuterClass.SalesmanActivityDetailInfo;
 import emu.grasscutter.server.packet.send.PacketActivityInfoNotify;
 import emu.grasscutter.utils.JsonUtils;
+import emu.grasscutter.utils.Utils;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
     @Override
     public void onProtoBuild(PlayerActivityData playerActivityData, ActivityInfo.Builder activityInfo) {
         SalesmanMpPlayerData salesmanMpPlayerData = getSalesmanMpPlayerData(playerActivityData);
-
+        resetNormalDayReward(playerActivityData, salesmanMpPlayerData);
         activityInfo.setSalesmanInfo(salesmanMpPlayerData.toProto());
     }
 
@@ -55,8 +57,7 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
         if (salesmanPlayerData.start()) {
             playerActivityData.setDetail(salesmanPlayerData);
             playerActivityData.save();
-            player.sendPacket(new PacketActivityInfoNotify(player.getActivityManager()
-                .getInfoProtoByActivityType(ActivityType.NEW_ACTIVITY_SALESMAN_MP).get()));
+            player.sendPacket(new PacketActivityInfoNotify(toProto(playerActivityData, player.getActivityManager().getConditionExecutor())));
         }
         return salesmanPlayerData.getDayRewardId();
     }
@@ -69,7 +70,6 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
         ActivitySalesmanData salesmanExcelData = GameData.getActivitySalesmanDataMap().get(scheduleId);
         int dailyConfig = salesmanExcelData.getDailyConfigIdList().get(salesmanPlayerData.getDayIndex()-1);
         ActivitySalesmanDailyData salesmanDailyData = GameData.getActivitySalesmanDailyDataMap().get(dailyConfig);
-        Grasscutter.getLogger().info("{}", dailyConfig);
         if (salesmanDailyData == null) return Retcode.RET_FAIL_VALUE;
 
         RewardData rewardData = GameData.getRewardDataMap().get(salesmanPlayerData.getDayRewardId());
@@ -88,8 +88,7 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
         salesmanPlayerData.deliver();
         playerActivityData.setDetail(salesmanPlayerData);
         playerActivityData.save();
-        player.sendPacket(new PacketActivityInfoNotify(player.getActivityManager()
-            .getInfoProtoByActivityType(ActivityType.NEW_ACTIVITY_SALESMAN_MP).get()));
+        player.sendPacket(new PacketActivityInfoNotify(toProto(playerActivityData, player.getActivityManager().getConditionExecutor())));
 
         return Retcode.RET_SUCC_VALUE;
     }
@@ -115,9 +114,18 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
         salesmanPlayerData.getSpecialReward();
         playerActivityData.setDetail(salesmanPlayerData);
         playerActivityData.save();
-        player.sendPacket(new PacketActivityInfoNotify(player.getActivityManager()
-            .getInfoProtoByActivityType(ActivityType.NEW_ACTIVITY_SALESMAN_MP).get()));
+        player.sendPacket(new PacketActivityInfoNotify(toProto(playerActivityData, player.getActivityManager().getConditionExecutor())));
 
         return Retcode.RET_SUCC_VALUE;
+    }
+
+    public void resetNormalDayReward(PlayerActivityData playerActivityData, SalesmanMpPlayerData salesmanPlayerData) {
+        LocalDate currentDate = LocalDate.ofInstant(Instant.ofEpochSecond(Utils.getCurrentSeconds()), ZoneId.systemDefault());
+        LocalDate lastResetDate = LocalDate.ofInstant(Instant.ofEpochSecond(salesmanPlayerData.getLastRefreshTime()), ZoneId.systemDefault());
+        if (!currentDate.isAfter(lastResetDate)) return;
+
+        salesmanPlayerData.resetDayReward(getActivityConfigItem().getScheduleId());
+        playerActivityData.setDetail(salesmanPlayerData);
+        playerActivityData.save();
     }
 }
