@@ -6,5 +6,7 @@ public interface ActivityConditionExecutor {
 
     List<Integer> getMeetActivitiesConditions(List<Integer> condIds);
 
+    List<Integer> getExpireActivitiesConditions(List<Integer> condIds);
+    
     boolean meetsCondition(int activityCondId);
 }

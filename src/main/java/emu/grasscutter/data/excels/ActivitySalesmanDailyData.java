@@ -24,4 +24,9 @@ public class ActivitySalesmanDailyData extends GameResource {
     public int getId() {
         return this.dailyConfigId;
     }
+
+    @Override
+    public void onLoad() {
+        this.costItemList = this.costItemList.stream().filter(x -> x != null).toList();
+    }
 }
