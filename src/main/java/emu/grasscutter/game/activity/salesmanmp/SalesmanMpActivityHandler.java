@@ -6,6 +6,7 @@ import emu.grasscutter.data.common.ItemParamData;
 import emu.grasscutter.data.excels.ActivitySalesmanData;
 import emu.grasscutter.data.excels.ActivitySalesmanDailyData;
 import emu.grasscutter.data.excels.RewardData;
+import emu.grasscutter.data.excels.RewardPreviewData;
 import emu.grasscutter.game.activity.ActivityHandler;
 import emu.grasscutter.game.activity.GameActivity;
 import emu.grasscutter.game.activity.PlayerActivityData;
@@ -21,6 +22,7 @@ import emu.grasscutter.utils.JsonUtils;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @GameActivity(ActivityType.NEW_ACTIVITY_SALESMAN_MP)
 public class SalesmanMpActivityHandler extends ActivityHandler {
@@ -84,6 +86,33 @@ public class SalesmanMpActivityHandler extends ActivityHandler {
         player.getInventory().addItemParamDatas(rewardData.getRewardItemList(), ActionReason.SalesmanReward);
 
         salesmanPlayerData.deliver();
+        playerActivityData.setDetail(salesmanPlayerData);
+        playerActivityData.save();
+        player.sendPacket(new PacketActivityInfoNotify(player.getActivityManager()
+            .getInfoProtoByActivityType(ActivityType.NEW_ACTIVITY_SALESMAN_MP).get()));
+
+        return Retcode.RET_SUCC_VALUE;
+    }
+
+    public int getSpecialReward(Player player, PlayerActivityData playerActivityData, int scheduleId) {
+        // if server's schedule id not equals to client requested schedule id
+        if (getActivityConfigItem().getScheduleId() != scheduleId) return Retcode.RET_FAIL_VALUE;
+
+        SalesmanMpPlayerData salesmanPlayerData = getSalesmanMpPlayerData(playerActivityData);
+        if (salesmanPlayerData.getDeliverCount() < salesmanPlayerData.getCondDayCount()) {
+            return Retcode.RET_SALESMAN_REWARD_COUNT_NOT_ENOUGH_VALUE;
+        }
+
+        RewardPreviewData specialRewardData = GameData.getRewardPreviewDataMap()
+            .get(salesmanPlayerData.getSpecialRewardPreviewId());
+        if (specialRewardData == null) return Retcode.RET_FAIL_VALUE;
+        
+        player.getInventory().addItemParamDatas(
+            Stream.of(specialRewardData.getPreviewItems()).toList(), 
+            ActionReason.SalesmanReward);
+
+        // save changed activity details
+        salesmanPlayerData.getSpecialReward();
         playerActivityData.setDetail(salesmanPlayerData);
         playerActivityData.save();
         player.sendPacket(new PacketActivityInfoNotify(player.getActivityManager()

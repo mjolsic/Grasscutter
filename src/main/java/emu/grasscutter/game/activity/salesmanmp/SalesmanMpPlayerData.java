@@ -26,6 +26,7 @@ public class SalesmanMpPlayerData {
     int deliverCount;
     int dayIndex;
     boolean isTodayHasDelivered;
+    boolean hasTakenSpecialReward;
     Set<Integer> receivedReward;
 
     public static SalesmanMpPlayerData create(int scheduleId) {
@@ -39,6 +40,7 @@ public class SalesmanMpPlayerData {
             .deliverCount(0)
             .dayIndex(1)
             .isTodayHasDelivered(false)
+            .hasTakenSpecialReward(false)
             .receivedReward(new HashSet<Integer>())
             .build();
     }
@@ -58,6 +60,10 @@ public class SalesmanMpPlayerData {
         getReceivedReward().add(getDayRewardId());
     }
 
+    public void getSpecialReward() {
+        setHasTakenSpecialReward(true);
+    }
+
     public SalesmanActivityDetailInfo toProto() {
         return SalesmanActivityDetailInfo.newBuilder()
             .setSpecialRewardPreviewId(getSpecialRewardPreviewId())
@@ -67,6 +73,7 @@ public class SalesmanMpPlayerData {
             .setDeliverCount(getDeliverCount())
             .setDayIndex(getDayIndex())
             .setIsTodayHasDelivered(isTodayHasDelivered())
+            .setIsHasTakenSpecialReward(isHasTakenSpecialReward())
             .build();
     }
 }
