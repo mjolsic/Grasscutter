@@ -52,6 +52,9 @@ public class GameData {
 
     @Getter private static final ArrayList<CodexReliquaryData> codexReliquaryArrayList = new ArrayList<>();
     @Getter private static final Int2ObjectMap<ActivityData> activityDataMap = new Int2ObjectOpenHashMap<>();
+    @Getter private static final Int2ObjectMap<ActivitySalesmanData> activitySalesmanDataMap = new Int2ObjectOpenHashMap<>();
+    @Getter private static final Int2ObjectMap<ActivitySalesmanDailyData> activitySalesmanDailyDataMap = new Int2ObjectOpenHashMap<>();
+    @Getter private static final Int2ObjectMap<ActivitySalesmanRewardData> activitySalesmanRewardDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<ActivityShopData> activityShopDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<ActivityWatcherData> activityWatcherDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<AvatarCostumeData> avatarCostumeDataItemIdMap = new Int2ObjectLinkedOpenHashMap<>();
