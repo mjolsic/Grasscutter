@@ -40,6 +40,12 @@ public class BasicActivityConditionExecutor implements ActivityConditionExecutor
             .collect(Collectors.toList());
     }
 
+    public List<Integer> getExpireActivitiesConditions(List<Integer> condIds) {
+        return condIds.stream()
+            .filter(x -> !this.meetsCondition(x))
+            .collect(Collectors.toList());
+    }
+
     @Override
     public boolean meetsCondition(int activityCondId) {
         ActivityCondExcelConfigData condData = activityConditions.get(activityCondId);

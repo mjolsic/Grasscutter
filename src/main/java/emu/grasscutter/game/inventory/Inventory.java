@@ -314,7 +314,7 @@ public class Inventory extends BasePlayerManager implements Iterable<GameItem> {
         return null;
     }
 
-    private int getVirtualItemCount(int itemId) {
+    public int getVirtualItemCount(int itemId) {
         switch (itemId) {
             case 201:  // Primogem
                 return this.player.getPrimogems();
