@@ -24,6 +24,7 @@ public class BartenderPlayerData {
     Set<Integer> unlockItemList;
     Set<Integer> unlockFormulaList;
     List<TaskInfoItem> unlockTaskList;
+    Set<Integer> finishedOrder;
     boolean isDevelopModuleOpen;
 
     public static BartenderPlayerData create() {
@@ -39,6 +40,7 @@ public class BartenderPlayerData {
                 .filter(x -> x.isUnlock(unlockedMaterials, 1))
                 .map(x-> x.getId()).collect(Collectors.toSet()))
             .unlockTaskList(List.of())
+            .finishedOrder(new HashSet<>())
             .isDevelopModuleOpen(false)
             .build();
     }
