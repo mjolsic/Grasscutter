@@ -237,6 +237,20 @@
       "success": "Zresetowano czas odświeżania sklepu podanego gracza.",
       "description": "Resetuj czas odświeżania sklepu podanego gracza."
     },
+    "salesmanMpActivity": {
+      "description": "Manipuluj funkcjonalnością działania Salesman MP.",
+      "success": "Pomyślnie wykonana operacja.",
+      "player_data_not_found": "Nie znaleziono danych gracza. Być może aktywność nie jest jeszcze włączona.",
+      "resource_data_not_found": "Nie znaleziono danych zasobu.",
+      "missing_param": "Brak parametru %s.",
+      "invalid_param": "Parametr %s jest nieprawidłowy.",
+      "notify_reset": "Koniec z dodatkową nagrodą do rzucenia. Zresetuj aktywność.",
+      "reward_taken": "Nagroda %s jest już zajęta.",
+      "get_reward_id": "Bieżący identyfikator nagrody to %s.",
+      "unknown_command": "Nieznane polecenie [%s].",
+      "state_already_is": "Nie można zmienić tego, co już jest.",
+      "invalid_schedule_id": "Identyfikator harmonogramu %s jest nieprawidłowy."
+    },
     "sendMail": {
       "give_usage": "Użycie: give <gracz> <id przedmiotu | avatarID> [ilość] [poziom] [refinement]",
       "user_not_exist": "Gracz o podanym ID %s nie istnieje.",

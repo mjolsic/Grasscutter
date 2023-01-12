@@ -237,6 +237,20 @@
       "success": "Reinicio completado.",
       "description": "Reinicia el tiempo de la tienda del jugador fijado"
     },
+    "salesmanMpActivity": {
+      "description": "Manipular la funcionalidad de actividad de Salesman MP.",
+      "success": "Operación ejecutada con éxito.",
+      "player_data_not_found": "No se encuentran los datos del jugador. Tal vez la actividad aún no esté habilitada.",
+      "resource_data_not_found": "No se encuentran los datos del recurso.",
+      "missing_param": "Falta el parámetro %s.",
+      "invalid_param": "El parámetro %s no es válido.",
+      "notify_reset": "No más recompensa extra para rodar. Reinicie la actividad.",
+      "reward_taken": "La recompensa %s ya se tomó.",
+      "get_reward_id": "El ID de recompensa actual es %s.",
+      "unknown_command": "Comando desconocido [%s].",
+      "state_already_is": "No se puede cambiar lo que ya es.",
+      "invalid_schedule_id": "El id. De programación% s no es válido."
+    },
     "sendMail": {
       "give_usage": "Usa: give <player> <itemID|itemName> [cantidad] [nivel] [refinamiento]",
       "user_not_exist": "El usuario con ID '%s' No existe.",

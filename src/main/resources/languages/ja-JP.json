@@ -237,6 +237,20 @@
       "success": "リセット完了｡",
       "description": "対象プレイヤーのショップ更新時間をリセットする"
     },
+    "salesmanMpActivity": {
+      "description": "Salesman MP アクティビティ機能を操作します。",
+      "success": "操作が正常に実行されました。",
+      "player_data_not_found": "プレイヤーデータが見つかりません。アクティビティがまだ有効になっていない可能性があります。",
+      "resource_data_not_found": "リソース データが見つかりません。",
+      "missing_param": "パラメータ %s がありません。",
+      "invalid_param": "パラメータ %s は無効です。",
+      "notify_reset": "ロールする追加の報酬はもうありません。アクティビティをリセットしてください。",
+      "reward_taken": "報酬 %s は既に使用されています。",
+      "get_reward_id": "現在の報酬 ID は %s です。",
+      "unknown_command": "不明なコマンド [%s]。",
+      "state_already_is": "すでにあるものを変更することはできません。",
+      "invalid_schedule_id": "スケジュール ID %s は無効です。"
+    },
     "sendMail": {
       "give_usage": "使用法: give <player> <itemID|itemName> [数] [レベル] [精錬]",
       "user_not_exist": "ID「%s」のユーザーは存在しません。",

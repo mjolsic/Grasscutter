@@ -237,6 +237,20 @@
       "success": "Reset complet.",
       "description": "Resetează timpul de reîmprospătare a magazinului jucătorului țintă."
     },
+    "salesmanMpActivity": {
+      "description": "Manipulați funcționalitatea activității Salesman MP.",
+      "success": "Operație executată cu succes.",
+      "player_data_not_found": "Datele jucătorului nu au fost găsite. Poate că activitatea nu este încă activată.",
+      "resource_data_not_found": "Datele despre resurse nu au fost găsite.",
+      "missing_param": "Parametrul %s lipsește.",
+      "invalid_param": "Parametrul %s este nevalid.",
+      "notify_reset": "Gata cu recompensă suplimentară de aruncat. Vă rugăm să resetați activitatea.",
+      "reward_taken": "Recompensa %s este deja luată.",
+      "get_reward_id": "ID-ul actual al recompensei este %s.",
+      "unknown_command": "Comanda necunoscută [%s].",
+      "state_already_is": "Nu se poate schimba ceea ce este deja.",
+      "invalid_schedule_id": "Id-ul de programare %s este nevalid."
+    },
     "sendMail": {
       "give_usage": "🇺🇸Usage: give <player> <itemID|itemName> [amount] [level] [refinement]",
       "user_not_exist": "Utilizatorul cu id-ul '%s' nu există.",

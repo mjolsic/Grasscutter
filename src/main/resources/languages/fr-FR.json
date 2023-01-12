@@ -237,6 +237,20 @@
       "success": "Réinitialisation terminée.",
       "description": "Réinitialise le temps d'actualisation  de la boutique du joueur spécifié"
     },
+    "salesmanMpActivity": {
+      "description": "Manipuler la fonctionnalité d'activité Salesman MP.",
+      "success": "Opération exécutée avec succès.",
+      "player_data_not_found": "Les données du joueur sont introuvables. Peut-être que l'activité n'est pas encore activée.",
+      "resource_data_not_found": "Les données de ressource sont introuvables.",
+      "missing_param": "Le paramètre %s est manquant.",
+      "invalid_param": "Le paramètre %s n'est pas valide.",
+      "notify_reset": "Plus de récompense supplémentaire à lancer. Veuillez réinitialiser l'activité.",
+      "reward_taken": "La récompense %s est déjà prise.",
+      "get_reward_id": "L'ID de récompense actuel est %s.",
+      "unknown_command": "Commande inconnue [%s].",
+      "state_already_is": "Impossible de changer ce qui est déjà.",
+      "invalid_schedule_id": "L'ID de planification %s n'est pas valide."
+    },
     "sendMail": {
       "give_usage": "Usage: give <joueur> <itemID|avatarID> [quantité] [niveau] [raffinement]",
       "user_not_exist": "L'utilisateur avec l'identifiant '%s' n'existe pas.",

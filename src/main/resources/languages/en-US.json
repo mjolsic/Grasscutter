@@ -237,6 +237,20 @@
       "success": "Reset complete.",
       "description": "Reset target player's shop refresh time"
     },
+    "salesmanMpActivity": {
+      "description": "Manipulate Salesman MP activity functionality.",
+      "success": "Successfully executed operation.",
+      "player_data_not_found": "Player data is not found. Maybe activity is not enabled yet.",
+      "resource_data_not_found": "Resource data is not found.",
+      "missing_param": "Parameter %s is missing.",
+      "invalid_param": "Parameter %s is invalid.",
+      "notify_reset": "No more extra reward to roll. Please reset the activity.",
+      "reward_taken": "Reward %s is already taken.",
+      "get_reward_id": "Current reward id is %s.",
+      "unknown_command": "Unknown command [%s].",
+      "state_already_is": "Cannot change what already is.",
+      "invalid_schedule_id": "Schedule id %s is invalid."
+    },
     "sendMail": {
       "give_usage": "Usage: give <player> <itemID|itemName> [amount] [level] [refinement]",
       "user_not_exist": "The user with an ID of '%s' does not exist.",

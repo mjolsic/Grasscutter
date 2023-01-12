@@ -79,9 +79,13 @@ public class SalesmanMpPlayerData {
         if (data == null) return;
 
         int newReward = getRandomNormalDayReward(data, getReceivedReward());
+        resetStatus(newReward);
+        setDayIndex(getDayIndex()+1);
+    }
+
+    public void resetStatus(int newReward) {
         setDayRewardId(newReward);
         setTodayHasDelivered(newReward == 0 ? true : false); // if no more reward to take
-        setDayIndex(getDayIndex()+1);
         setStatus(SalesmanStatusType.SALESMAN_STATUS_TYPE_UNSTARTED_VALUE);
         setLastRefreshTime(Utils.getCurrentSeconds());
     }

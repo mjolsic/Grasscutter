@@ -237,6 +237,20 @@
       "success": "重置完成。",
       "description": "重置所選玩家的商店刷新時間。"
     },
+    "salesmanMpActivity": {
+      "description": "操縱百貨奇貨的活動功能。",
+      "success": "成功執行操作。",
+      "player_data_not_found": "找不到用戶數據。也許活動尚未被啟用。",
+      "resource_data_not_found": "找不到資源數據。",
+      "missing_param": "缺少參數 %s。",
+      "invalid_param": "參數 %s 無效。",
+      "notify_reset": "沒有更多的額外獎勵可以更換。請重置活動。",
+      "reward_taken": "獎勵 %s 已被領取。",
+      "get_reward_id": "當前獎勵 ID 是 %s。",
+      "unknown_command": "未知命令 [%s]。",
+      "state_already_is": "無法更改相同的狀態。",
+      "invalid_schedule_id": "計劃 ID %s 無效。"
+    },
     "sendMail": {
       "give_usage": "用法： give <player> <itemID|itemName> [amount] [level] [refinement]",
       "user_not_exist": "ID '%s' 的使用者不存在。",

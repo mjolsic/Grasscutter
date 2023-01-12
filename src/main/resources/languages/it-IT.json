@@ -230,6 +230,20 @@
       "success": "Reset completato.",
       "description": "Reimposta il tempo di aggiornamento del negozio del giocatore bersaglio"
     },
+    "salesmanMpActivity": {
+      "description": "Manipolare la funzionalità dell'attività Salesman MP.",
+      "success": "Operazione eseguita con successo.",
+      "player_data_not_found": "I dati del giocatore non sono stati trovati. Forse l'attività non è ancora abilitata.",
+      "resource_data_not_found": "I dati della risorsa non sono stati trovati.",
+      "missing_param": "Manca il parametro %s.",
+      "invalid_param": "Il parametro %s non è valido.",
+      "notify_reset": "Niente più ricompense extra da lanciare. Si prega di reimpostare l'attività.",
+      "reward_taken": "Il premio %s è già stato preso.",
+      "get_reward_id": "L'ID del premio attuale è %s.",
+      "unknown_command": "Comando sconosciuto [%s].",
+      "state_already_is": "Non puoi cambiare ciò che è già.",
+      "invalid_schedule_id": "ID programma %s non valido."
+    },
     "sendMail": {
       "give_usage": "Utilizzo: give <player> <itemID|itemName> [importo] [livello] [raffinamento]",
       "user_not_exist": "L'utente con ID '%s' non esiste.",
