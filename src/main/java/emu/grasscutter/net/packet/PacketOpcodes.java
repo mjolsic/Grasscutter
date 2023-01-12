@@ -126,6 +126,8 @@ public class PacketOpcodes {
     public static final int BargainTerminateNotify = 494;
     public static final int BartenderCancelOrderReq = 8442;
     public static final int BartenderCancelOrderRsp = 8837;
+    public static final int BartenderGetFormulaReq = 8462;
+    public static final int BartenderGetFormulaRsp = 8842;
     public static final int BattlePassAllDataNotify = 2626;
     public static final int BattlePassBuySuccNotify = 2614;
     public static final int BattlePassCurScheduleUpdateNotify = 2607;
@@ -1631,7 +1633,6 @@ public class PacketOpcodes {
     public static final int Unk2700_KEMOFNEAOOO_ClientRsp = 1182;
     public static final int Unk2700_KFPEIHHCCLA = 8978;
     public static final int Unk2700_KGHOJPDNMKK_ServerRsp = 4641;
-    public static final int Unk2700_KGNJIBIMAHI = 8842;
     public static final int Unk2700_KHLJJPGOELG_ClientReq = 6225;
     public static final int Unk2700_KIHEEAGDGIL_ServerNotify = 108;
     public static final int Unk2700_KIIOGMKFNNP_ServerRsp = 4615;
@@ -1674,7 +1675,6 @@ public class PacketOpcodes {
     public static final int Unk2700_MFAIPHGDPBL = 8345;
     public static final int Unk2700_MFINCDMFGLD_ServerNotify = 152;
     public static final int Unk2700_MHMBDFKOOLJ_ClientNotify = 6234;
-    public static final int Unk2700_MIBHNLEMICB = 8462;
     public static final int Unk2700_MIEJMGNBPJE = 8377;
     public static final int Unk2700_MJAIKMBPKCD = 8569;
     public static final int Unk2700_MJCCKKHJNMP_ServerRsp = 6212;
