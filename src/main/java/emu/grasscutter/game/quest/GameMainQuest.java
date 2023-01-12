@@ -393,6 +393,36 @@ public class GameMainQuest {
         }
     }
 
+    public void triggerTalksExec(TalkData talkData) {
+        if (talkData.getFinishExec() == null) return;
+
+        talkData.getFinishExec().forEach(e -> {
+            switch (e.getType()) {
+                case TALK_EXEC_TRANS_SCENE_DUMMY_POINT -> {
+                    if (e.getParam().length < 2) return;
+
+                    ScriptSceneData fullGlobals = GameData.getScriptSceneDataMap().get("flat.luas.scenes.full_globals.lua.json");
+                    if (fullGlobals == null) return;
+
+                    ScriptSceneData.ScriptObject dummyPointScript = fullGlobals.getScriptObjectList().get(e.getParam()[0] + "/scene" + e.getParam()[0] + "_dummy_points.lua");
+                    if (dummyPointScript == null) return;
+
+                    Map<String, List<Float>> dummyPointMap = dummyPointScript.getDummyPoints();
+                    if (dummyPointMap == null) return;
+
+                    List<Float> transmitPosPos = dummyPointMap.get(e.getParam()[1] + ".pos");
+                    // List<Float> transmitPosRot = dummyPointMap.get(e.getParam()[1] + ".rot"); would be useful when transportation consider rotation
+                    if (transmitPosPos == null || transmitPosPos.isEmpty()) return;
+
+                    getOwner().getWorld().transferPlayerToScene(
+                        getOwner(), 
+                        Integer.parseInt(e.getParam()[0]), 
+                        new Position(transmitPosPos.get(0), transmitPosPos.get(1), transmitPosPos.get(2)));
+                }
+            }    
+        });
+    }
+
     public void save() {
         DatabaseHelper.saveQuest(this);
     }

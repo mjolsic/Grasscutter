@@ -1,7 +1,9 @@
 package emu.grasscutter.data.binout;
 
 import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Transient;
 import emu.grasscutter.game.quest.enums.QuestType;
+import emu.grasscutter.game.quest.enums.TalkExec;
 import lombok.Data;
 import java.util.List;
 import java.util.Objects;
@@ -66,11 +68,18 @@ public class MainQuestData {
     public static class TalkData {
         private int id;
         private String heroTalk;
+        @Transient private List<TalkExecParam> finishExec;
 
         public TalkData() {}
         public TalkData(int id, String heroTalk) {
             this.id = id;
             this.heroTalk = heroTalk;
+        }
+
+        @Data
+        public static class TalkExecParam {
+            TalkExec type;
+            String[] param;
         }
     }
 }

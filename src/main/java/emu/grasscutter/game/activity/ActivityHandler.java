@@ -29,6 +29,7 @@ public abstract class ActivityHandler {
 
     abstract public void onProtoBuild(PlayerActivityData playerActivityData, ActivityInfoOuterClass.ActivityInfo.Builder activityInfo);
     abstract public void onInitPlayerActivityData(PlayerActivityData playerActivityData);
+    public void addActivityQuest(Player player){};
 
     public void initWatchers(Map<WatcherTriggerType, ConstructorAccess<?>> activityWatcherTypeMap){
         activityData = GameData.getActivityDataMap().get(activityConfigItem.getActivityId());

@@ -42,6 +42,7 @@ public class HandlerNpcTalkReq extends PacketHandler {
             val mainQuest = questManager.getMainQuestByTalkId(talkId);
             if (mainQuest != null) {
                 mainQuest.getTalks().put(talkId, talkForQuest);
+                mainQuest.triggerTalksExec(talkForQuest);
             }
 
             // Fire quest triggers.
