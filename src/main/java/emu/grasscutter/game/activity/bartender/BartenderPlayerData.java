@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -26,11 +27,17 @@ public class BartenderPlayerData {
     boolean isDevelopModuleOpen;
 
     public static BartenderPlayerData create() {
+        Set<Integer> unlockedMaterials = GameData.getBartenderMaterialUnlockDataMap().values().stream()
+            .filter(x -> x.getUnlockDayCount() == 1)
+            .map(x-> x.getId()).collect(Collectors.toSet());
+
         return BartenderPlayerData.of()
             .isContentClosed(false)
             .unlockLevelList(List.of())
-            .unlockItemList(new HashSet<>())
-            .unlockFormulaList(new HashSet<>())
+            .unlockItemList(unlockedMaterials)
+            .unlockFormulaList(GameData.getBartenderFormulaDataMap().values().stream()
+                .filter(x -> x.isUnlock(unlockedMaterials, 1))
+                .map(x-> x.getId()).collect(Collectors.toSet()))
             .unlockTaskList(List.of())
             .isDevelopModuleOpen(false)
             .build();
