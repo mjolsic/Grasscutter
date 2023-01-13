@@ -104,8 +104,6 @@ public class ActivityManager extends BasePlayerManager {
             GameData.getActivityCondExcelConfigDataMap(),
             PlayerActivityDataMappingBuilder.buildPlayerActivityDataByActivityCondId(playerActivityDataMap),
             AllActivityConditionBuilder.buildActivityConditions());
-
-        playerActivityDataMap.values().forEach(data -> data.getActivityHandler().addActivityQuest(player));
     }
 
     /**
