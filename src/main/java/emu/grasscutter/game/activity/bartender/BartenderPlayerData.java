@@ -11,8 +11,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
@@ -20,10 +19,10 @@ import java.util.stream.Collectors;
 @Builder(builderMethodName = "of")
 public class BartenderPlayerData {
     boolean isContentClosed;
-    List<LevelInfoItem> unlockLevelList;
+    Map<Integer, LevelInfoItem> unlockLevel;
     Set<Integer> unlockItemList;
     Set<Integer> unlockFormulaList;
-    List<TaskInfoItem> unlockTaskList;
+    Map<Integer, TaskInfoItem> unlockTask;
     Set<Integer> finishedOrder;
     boolean isDevelopModuleOpen;
 
@@ -34,13 +33,13 @@ public class BartenderPlayerData {
 
         return BartenderPlayerData.of()
             .isContentClosed(false)
-            .unlockLevelList(List.of())
+            .unlockLevel(Map.of())
             .unlockItemList(unlockedMaterials)
             .unlockFormulaList(GameData.getBartenderFormulaDataMap().values().stream()
                 .filter(x -> x.isUnlock(unlockedMaterials, 1))
                 .map(x-> x.getId()).collect(Collectors.toSet()))
-            .unlockTaskList(List.of())
-            .finishedOrder(new HashSet<>())
+            .unlockTask(Map.of())
+            .finishedOrder(Set.of())
             .isDevelopModuleOpen(false)
             .build();
     }
@@ -48,10 +47,10 @@ public class BartenderPlayerData {
     public BartenderActivityDetailInfo toProto() {
         return BartenderActivityDetailInfo.newBuilder()
             .setIsContentClosed(isContentClosed())
-            .addAllUnlockLevelList(getUnlockLevelList().stream().map(LevelInfoItem::toProto).toList())
+            .addAllUnlockLevelList(getUnlockLevel().values().stream().map(LevelInfoItem::toProto).toList())
             .addAllUnlockItemList(getUnlockItemList())
             .addAllUnlockFormulaList(getUnlockFormulaList())
-            .addAllUnlockTaskList(getUnlockTaskList().stream().map(TaskInfoItem::toProto).toList())
+            .addAllUnlockTaskList(getUnlockTask().values().stream().map(TaskInfoItem::toProto).toList())
             .setIsDevelopModuleOpen(isDevelopModuleOpen())
             .build();
     }
