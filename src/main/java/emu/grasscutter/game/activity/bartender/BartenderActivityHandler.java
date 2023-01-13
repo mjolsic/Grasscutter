@@ -7,6 +7,7 @@ import emu.grasscutter.data.common.ItemParamData;
 import emu.grasscutter.data.excels.BartenderFormulaData;
 import emu.grasscutter.data.excels.BartenderOrderData;
 import emu.grasscutter.data.excels.BartenderTaskData;
+import emu.grasscutter.data.excels.RewardPreviewData;
 import emu.grasscutter.game.activity.ActivityHandler;
 import emu.grasscutter.game.activity.GameActivity;
 import emu.grasscutter.game.activity.PlayerActivityData;
@@ -126,6 +127,11 @@ public class BartenderActivityHandler extends ActivityHandler {
             .filter(taskItem -> !taskItem.isFinish())
             .filter(taskItem -> GameData.getBartenderTaskDataMap().get(taskItem.getId()).getParentQuestId() == (int) questId / 100)
             .forEach(taskItem -> {
+                int taskPreviewRewardId = GameData.getBartenderTaskDataMap().get(taskItem.getId()).getRewardPreviewId();
+                RewardPreviewData reward = GameData.getRewardPreviewDataMap().get(taskPreviewRewardId);
+                if (reward == null) return;
+
+                player.getInventory().addItemParamDatas(Stream.of(reward.getPreviewItems()).toList());
                 taskItem.setFinish(true);
                 player.getActivityManager().triggerWatcher(
                     WatcherTriggerType.TRIGGER_BARTENDER_FINISH_STORY_MODULE, 
