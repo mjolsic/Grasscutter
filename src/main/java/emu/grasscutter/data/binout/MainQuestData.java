@@ -68,18 +68,11 @@ public class MainQuestData {
     public static class TalkData {
         private int id;
         private String heroTalk;
-        @Transient private List<TalkExecParam> finishExec;
 
         public TalkData() {}
         public TalkData(int id, String heroTalk) {
             this.id = id;
             this.heroTalk = heroTalk;
-        }
-
-        @Data
-        public static class TalkExecParam {
-            TalkExec type;
-            String[] param;
         }
     }
 }

@@ -68,6 +68,7 @@ public class GameData {
     @Getter private static final Int2ObjectMap<BartenderAffixData> bartenderAffixDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<BartenderFormulaData> bartenderFormulaDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<BartenderOrderData> bartenderOrderDataMap = new Int2ObjectOpenHashMap<>();
+    @Getter private static final Int2ObjectMap<BartenderTaskData> bartenderTaskDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<BartenderMaterialUnlockData> bartenderMaterialUnlockDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<BattlePassMissionData> battlePassMissionDataMap = new Int2ObjectOpenHashMap<>();
     @Getter private static final Int2ObjectMap<BattlePassRewardData> battlePassRewardDataMap = new Int2ObjectOpenHashMap<>();
