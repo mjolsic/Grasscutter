@@ -8,6 +8,7 @@ import emu.grasscutter.game.activity.bartender.BartenderCupSize;
 
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ResourceType(name = "BartenderOrderExcelConfigData.json")
+@EqualsAndHashCode(callSuper=false)
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BartenderOrderData extends GameResource {
@@ -27,6 +29,8 @@ public class BartenderOrderData extends GameResource {
     @SerializedName(value="cupSize", alternate={"NHJHPDNJJLM"})
     String cupSize;
     BartenderCupSize bartenderCupSize;
+    int time;
+    int score;
 
     @Override
     public int getId() {
@@ -36,6 +40,5 @@ public class BartenderOrderData extends GameResource {
     public void onLoad() {
         this.affixes = this.affixes.stream().filter(x -> x > 0).toList();
         this.bartenderCupSize = BartenderCupSize.getTypeByName(this.cupSize);
-        
     }
 }

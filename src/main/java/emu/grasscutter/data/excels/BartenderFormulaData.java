@@ -6,6 +6,7 @@ import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ResourceType(name = "BartenderFormulaExcelConfigData.json")
+@EqualsAndHashCode(callSuper=false)
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BartenderFormulaData extends GameResource {
@@ -26,7 +28,8 @@ public class BartenderFormulaData extends GameResource {
     List<Integer> affixes;
     @SerializedName(value="cupSize", alternate={"CDLHGJKFNDA"})
     String cupSize;
-    // "KAOBBJIMKCA": 1,
+    @SerializedName(value="unlockDayCount", alternate={"KAOBBJIMKCA"})
+    int unlockDayCount;
     // "AIGCKCLMEBC": 1,
     List<ItemParamData> allCond;
 
@@ -46,14 +49,8 @@ public class BartenderFormulaData extends GameResource {
         }
     }
 
-    public boolean isUnlock(Collection<Integer> unlockedMaterials, int count) {
-        return this.allCond.isEmpty() ? true : 
-            this.allCond.stream().allMatch(f -> unlockedMaterials.contains(f.getId()) && f.getCount() == count);
-    }
-
-    public boolean matchFormula(Collection<ItemParamData> unlockedMaterials) {
-        return this.allCond.isEmpty() ? false : 
-            this.allCond.stream().allMatch(f -> 
-                unlockedMaterials.stream().anyMatch(i -> i.getId() == f.getId() && i.getCount() == f.getCount()));
+    public boolean isUnlock(Collection<Integer> unlockedMaterials, int matCount, int dayCount) {
+        return this.allCond.stream().allMatch(f -> unlockedMaterials.contains(f.getId()) && f.getCount() == matCount
+                && dayCount >= this.unlockDayCount);
     }
 }

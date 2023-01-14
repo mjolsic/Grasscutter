@@ -4,22 +4,23 @@ import com.google.gson.annotations.SerializedName;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
 @ResourceType(name = "BartenderAffixExcelConfigData.json")
-@Getter
-@Setter
+@EqualsAndHashCode(callSuper=false)
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BartenderAffixData extends GameResource {
     int id;
     @SerializedName(value="condition", alternate={"EMPODCNGOFA"})
     String condition;
     int materialId;
-    // "GHKMMNOPHLF": 1
+    @SerializedName(value="materialCount", alternate={"GHKMMNOPHLF"})
+    int materialCount;
 
     @Override
     public int getId() {

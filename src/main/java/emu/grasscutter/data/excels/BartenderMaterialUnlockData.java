@@ -4,15 +4,15 @@ import com.google.gson.annotations.SerializedName;
 import emu.grasscutter.data.GameResource;
 import emu.grasscutter.data.ResourceType;
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
 @ResourceType(name = "BartenderMaterialUnlockConfigData.json")
-@Getter
-@Setter
+@EqualsAndHashCode(callSuper=false)
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BartenderMaterialUnlockData extends GameResource {
     int id;
