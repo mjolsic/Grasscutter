@@ -19,16 +19,16 @@ public final class BartenderCompleteOrderReqOuterClass {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>uint32 cup_size = 14;</code>
-     * @return The cupSize.
+     * <code>uint32 cup_type = 14;</code>
+     * @return The cupType.
      */
-    int getCupSize();
+    int getCupType();
 
     /**
-     * <code>uint32 Unk2700_CHHJBPDPICI = 7;</code>
-     * @return The unk2700CHHJBPDPICI.
+     * <code>uint32 qte_count = 7;</code>
+     * @return The qteCount.
      */
-    int getUnk2700CHHJBPDPICI();
+    int getQteCount();
 
     /**
      * <code>uint32 quest_id = 11;</code>
@@ -84,10 +84,10 @@ public final class BartenderCompleteOrderReqOuterClass {
     int getOptionalOrderList(int index);
 
     /**
-     * <code>uint32 Unk2700_OEDDPDJEEPC = 3;</code>
-     * @return The unk2700OEDDPDJEEPC.
+     * <code>uint32 retry_count = 3;</code>
+     * @return The retryCount.
      */
-    int getUnk2700OEDDPDJEEPC();
+    int getRetryCount();
   }
   /**
    * <pre>
@@ -146,7 +146,7 @@ public final class BartenderCompleteOrderReqOuterClass {
               break;
             case 24: {
 
-              unk2700OEDDPDJEEPC_ = input.readUInt32();
+              retryCount_ = input.readUInt32();
               break;
             }
             case 48: {
@@ -172,7 +172,7 @@ public final class BartenderCompleteOrderReqOuterClass {
             }
             case 56: {
 
-              unk2700CHHJBPDPICI_ = input.readUInt32();
+              qteCount_ = input.readUInt32();
               break;
             }
             case 72: {
@@ -196,7 +196,7 @@ public final class BartenderCompleteOrderReqOuterClass {
             }
             case 112: {
 
-              cupSize_ = input.readUInt32();
+              cupType_ = input.readUInt32();
               break;
             }
             default: {
@@ -239,26 +239,26 @@ public final class BartenderCompleteOrderReqOuterClass {
               emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq.class, emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq.Builder.class);
     }
 
-    public static final int CUP_SIZE_FIELD_NUMBER = 14;
-    private int cupSize_;
+    public static final int CUP_TYPE_FIELD_NUMBER = 14;
+    private int cupType_;
     /**
-     * <code>uint32 cup_size = 14;</code>
-     * @return The cupSize.
+     * <code>uint32 cup_type = 14;</code>
+     * @return The cupType.
      */
     @java.lang.Override
-    public int getCupSize() {
-      return cupSize_;
+    public int getCupType() {
+      return cupType_;
     }
 
-    public static final int UNK2700_CHHJBPDPICI_FIELD_NUMBER = 7;
-    private int unk2700CHHJBPDPICI_;
+    public static final int QTE_COUNT_FIELD_NUMBER = 7;
+    private int qteCount_;
     /**
-     * <code>uint32 Unk2700_CHHJBPDPICI = 7;</code>
-     * @return The unk2700CHHJBPDPICI.
+     * <code>uint32 qte_count = 7;</code>
+     * @return The qteCount.
      */
     @java.lang.Override
-    public int getUnk2700CHHJBPDPICI() {
-      return unk2700CHHJBPDPICI_;
+    public int getQteCount() {
+      return qteCount_;
     }
 
     public static final int QUEST_ID_FIELD_NUMBER = 11;
@@ -351,15 +351,15 @@ public final class BartenderCompleteOrderReqOuterClass {
     }
     private int optionalOrderListMemoizedSerializedSize = -1;
 
-    public static final int UNK2700_OEDDPDJEEPC_FIELD_NUMBER = 3;
-    private int unk2700OEDDPDJEEPC_;
+    public static final int RETRY_COUNT_FIELD_NUMBER = 3;
+    private int retryCount_;
     /**
-     * <code>uint32 Unk2700_OEDDPDJEEPC = 3;</code>
-     * @return The unk2700OEDDPDJEEPC.
+     * <code>uint32 retry_count = 3;</code>
+     * @return The retryCount.
      */
     @java.lang.Override
-    public int getUnk2700OEDDPDJEEPC() {
-      return unk2700OEDDPDJEEPC_;
+    public int getRetryCount() {
+      return retryCount_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -377,8 +377,8 @@ public final class BartenderCompleteOrderReqOuterClass {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (unk2700OEDDPDJEEPC_ != 0) {
-        output.writeUInt32(3, unk2700OEDDPDJEEPC_);
+      if (retryCount_ != 0) {
+        output.writeUInt32(3, retryCount_);
       }
       if (getOptionalOrderListList().size() > 0) {
         output.writeUInt32NoTag(50);
@@ -387,8 +387,8 @@ public final class BartenderCompleteOrderReqOuterClass {
       for (int i = 0; i < optionalOrderList_.size(); i++) {
         output.writeUInt32NoTag(optionalOrderList_.getInt(i));
       }
-      if (unk2700CHHJBPDPICI_ != 0) {
-        output.writeUInt32(7, unk2700CHHJBPDPICI_);
+      if (qteCount_ != 0) {
+        output.writeUInt32(7, qteCount_);
       }
       if (isViewFormula_ != false) {
         output.writeBool(9, isViewFormula_);
@@ -399,8 +399,8 @@ public final class BartenderCompleteOrderReqOuterClass {
       if (questId_ != 0) {
         output.writeUInt32(11, questId_);
       }
-      if (cupSize_ != 0) {
-        output.writeUInt32(14, cupSize_);
+      if (cupType_ != 0) {
+        output.writeUInt32(14, cupType_);
       }
       unknownFields.writeTo(output);
     }
@@ -411,9 +411,9 @@ public final class BartenderCompleteOrderReqOuterClass {
       if (size != -1) return size;
 
       size = 0;
-      if (unk2700OEDDPDJEEPC_ != 0) {
+      if (retryCount_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(3, unk2700OEDDPDJEEPC_);
+          .computeUInt32Size(3, retryCount_);
       }
       {
         int dataSize = 0;
@@ -429,9 +429,9 @@ public final class BartenderCompleteOrderReqOuterClass {
         }
         optionalOrderListMemoizedSerializedSize = dataSize;
       }
-      if (unk2700CHHJBPDPICI_ != 0) {
+      if (qteCount_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(7, unk2700CHHJBPDPICI_);
+          .computeUInt32Size(7, qteCount_);
       }
       if (isViewFormula_ != false) {
         size += com.google.protobuf.CodedOutputStream
@@ -445,9 +445,9 @@ public final class BartenderCompleteOrderReqOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(11, questId_);
       }
-      if (cupSize_ != 0) {
+      if (cupType_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(14, cupSize_);
+          .computeUInt32Size(14, cupType_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -464,10 +464,10 @@ public final class BartenderCompleteOrderReqOuterClass {
       }
       emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq other = (emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq) obj;
 
-      if (getCupSize()
-          != other.getCupSize()) return false;
-      if (getUnk2700CHHJBPDPICI()
-          != other.getUnk2700CHHJBPDPICI()) return false;
+      if (getCupType()
+          != other.getCupType()) return false;
+      if (getQteCount()
+          != other.getQteCount()) return false;
       if (getQuestId()
           != other.getQuestId()) return false;
       if (!getItemListList()
@@ -476,8 +476,8 @@ public final class BartenderCompleteOrderReqOuterClass {
           != other.getIsViewFormula()) return false;
       if (!getOptionalOrderListList()
           .equals(other.getOptionalOrderListList())) return false;
-      if (getUnk2700OEDDPDJEEPC()
-          != other.getUnk2700OEDDPDJEEPC()) return false;
+      if (getRetryCount()
+          != other.getRetryCount()) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -489,10 +489,10 @@ public final class BartenderCompleteOrderReqOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + CUP_SIZE_FIELD_NUMBER;
-      hash = (53 * hash) + getCupSize();
-      hash = (37 * hash) + UNK2700_CHHJBPDPICI_FIELD_NUMBER;
-      hash = (53 * hash) + getUnk2700CHHJBPDPICI();
+      hash = (37 * hash) + CUP_TYPE_FIELD_NUMBER;
+      hash = (53 * hash) + getCupType();
+      hash = (37 * hash) + QTE_COUNT_FIELD_NUMBER;
+      hash = (53 * hash) + getQteCount();
       hash = (37 * hash) + QUEST_ID_FIELD_NUMBER;
       hash = (53 * hash) + getQuestId();
       if (getItemListCount() > 0) {
@@ -506,8 +506,8 @@ public final class BartenderCompleteOrderReqOuterClass {
         hash = (37 * hash) + OPTIONAL_ORDER_LIST_FIELD_NUMBER;
         hash = (53 * hash) + getOptionalOrderListList().hashCode();
       }
-      hash = (37 * hash) + UNK2700_OEDDPDJEEPC_FIELD_NUMBER;
-      hash = (53 * hash) + getUnk2700OEDDPDJEEPC();
+      hash = (37 * hash) + RETRY_COUNT_FIELD_NUMBER;
+      hash = (53 * hash) + getRetryCount();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -649,9 +649,9 @@ public final class BartenderCompleteOrderReqOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        cupSize_ = 0;
+        cupType_ = 0;
 
-        unk2700CHHJBPDPICI_ = 0;
+        qteCount_ = 0;
 
         questId_ = 0;
 
@@ -665,7 +665,7 @@ public final class BartenderCompleteOrderReqOuterClass {
 
         optionalOrderList_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000002);
-        unk2700OEDDPDJEEPC_ = 0;
+        retryCount_ = 0;
 
         return this;
       }
@@ -694,8 +694,8 @@ public final class BartenderCompleteOrderReqOuterClass {
       public emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq buildPartial() {
         emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq result = new emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq(this);
         int from_bitField0_ = bitField0_;
-        result.cupSize_ = cupSize_;
-        result.unk2700CHHJBPDPICI_ = unk2700CHHJBPDPICI_;
+        result.cupType_ = cupType_;
+        result.qteCount_ = qteCount_;
         result.questId_ = questId_;
         if (itemListBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
@@ -712,7 +712,7 @@ public final class BartenderCompleteOrderReqOuterClass {
           bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.optionalOrderList_ = optionalOrderList_;
-        result.unk2700OEDDPDJEEPC_ = unk2700OEDDPDJEEPC_;
+        result.retryCount_ = retryCount_;
         onBuilt();
         return result;
       }
@@ -761,11 +761,11 @@ public final class BartenderCompleteOrderReqOuterClass {
 
       public Builder mergeFrom(emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq other) {
         if (other == emu.grasscutter.net.proto.BartenderCompleteOrderReqOuterClass.BartenderCompleteOrderReq.getDefaultInstance()) return this;
-        if (other.getCupSize() != 0) {
-          setCupSize(other.getCupSize());
+        if (other.getCupType() != 0) {
+          setCupType(other.getCupType());
         }
-        if (other.getUnk2700CHHJBPDPICI() != 0) {
-          setUnk2700CHHJBPDPICI(other.getUnk2700CHHJBPDPICI());
+        if (other.getQteCount() != 0) {
+          setQteCount(other.getQteCount());
         }
         if (other.getQuestId() != 0) {
           setQuestId(other.getQuestId());
@@ -809,8 +809,8 @@ public final class BartenderCompleteOrderReqOuterClass {
           }
           onChanged();
         }
-        if (other.getUnk2700OEDDPDJEEPC() != 0) {
-          setUnk2700OEDDPDJEEPC(other.getUnk2700OEDDPDJEEPC());
+        if (other.getRetryCount() != 0) {
+          setRetryCount(other.getRetryCount());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -842,64 +842,64 @@ public final class BartenderCompleteOrderReqOuterClass {
       }
       private int bitField0_;
 
-      private int cupSize_ ;
+      private int cupType_ ;
       /**
-       * <code>uint32 cup_size = 14;</code>
-       * @return The cupSize.
+       * <code>uint32 cup_type = 14;</code>
+       * @return The cupType.
        */
       @java.lang.Override
-      public int getCupSize() {
-        return cupSize_;
+      public int getCupType() {
+        return cupType_;
       }
       /**
-       * <code>uint32 cup_size = 14;</code>
-       * @param value The cupSize to set.
+       * <code>uint32 cup_type = 14;</code>
+       * @param value The cupType to set.
        * @return This builder for chaining.
        */
-      public Builder setCupSize(int value) {
+      public Builder setCupType(int value) {
         
-        cupSize_ = value;
+        cupType_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>uint32 cup_size = 14;</code>
+       * <code>uint32 cup_type = 14;</code>
        * @return This builder for chaining.
        */
-      public Builder clearCupSize() {
+      public Builder clearCupType() {
         
-        cupSize_ = 0;
+        cupType_ = 0;
         onChanged();
         return this;
       }
 
-      private int unk2700CHHJBPDPICI_ ;
+      private int qteCount_ ;
       /**
-       * <code>uint32 Unk2700_CHHJBPDPICI = 7;</code>
-       * @return The unk2700CHHJBPDPICI.
+       * <code>uint32 qte_count = 7;</code>
+       * @return The qteCount.
        */
       @java.lang.Override
-      public int getUnk2700CHHJBPDPICI() {
-        return unk2700CHHJBPDPICI_;
+      public int getQteCount() {
+        return qteCount_;
       }
       /**
-       * <code>uint32 Unk2700_CHHJBPDPICI = 7;</code>
-       * @param value The unk2700CHHJBPDPICI to set.
+       * <code>uint32 qte_count = 7;</code>
+       * @param value The qteCount to set.
        * @return This builder for chaining.
        */
-      public Builder setUnk2700CHHJBPDPICI(int value) {
+      public Builder setQteCount(int value) {
         
-        unk2700CHHJBPDPICI_ = value;
+        qteCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>uint32 Unk2700_CHHJBPDPICI = 7;</code>
+       * <code>uint32 qte_count = 7;</code>
        * @return This builder for chaining.
        */
-      public Builder clearUnk2700CHHJBPDPICI() {
+      public Builder clearQteCount() {
         
-        unk2700CHHJBPDPICI_ = 0;
+        qteCount_ = 0;
         onChanged();
         return this;
       }
@@ -1285,33 +1285,33 @@ public final class BartenderCompleteOrderReqOuterClass {
         return this;
       }
 
-      private int unk2700OEDDPDJEEPC_ ;
+      private int retryCount_ ;
       /**
-       * <code>uint32 Unk2700_OEDDPDJEEPC = 3;</code>
-       * @return The unk2700OEDDPDJEEPC.
+       * <code>uint32 retry_count = 3;</code>
+       * @return The retryCount.
        */
       @java.lang.Override
-      public int getUnk2700OEDDPDJEEPC() {
-        return unk2700OEDDPDJEEPC_;
+      public int getRetryCount() {
+        return retryCount_;
       }
       /**
-       * <code>uint32 Unk2700_OEDDPDJEEPC = 3;</code>
-       * @param value The unk2700OEDDPDJEEPC to set.
+       * <code>uint32 retry_count = 3;</code>
+       * @param value The retryCount to set.
        * @return This builder for chaining.
        */
-      public Builder setUnk2700OEDDPDJEEPC(int value) {
+      public Builder setRetryCount(int value) {
         
-        unk2700OEDDPDJEEPC_ = value;
+        retryCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>uint32 Unk2700_OEDDPDJEEPC = 3;</code>
+       * <code>uint32 retry_count = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearUnk2700OEDDPDJEEPC() {
+      public Builder clearRetryCount() {
         
-        unk2700OEDDPDJEEPC_ = 0;
+        retryCount_ = 0;
         onChanged();
         return this;
       }
@@ -1383,13 +1383,12 @@ public final class BartenderCompleteOrderReqOuterClass {
   static {
     java.lang.String[] descriptorData = {
       "\n\037BartenderCompleteOrderReq.proto\032\017ItemP" +
-      "aram.proto\"\316\001\n\031BartenderCompleteOrderReq" +
-      "\022\020\n\010cup_size\030\016 \001(\r\022\033\n\023Unk2700_CHHJBPDPIC" +
-      "I\030\007 \001(\r\022\020\n\010quest_id\030\013 \001(\r\022\035\n\titem_list\030\n" +
-      " \003(\0132\n.ItemParam\022\027\n\017is_view_formula\030\t \001(" +
-      "\010\022\033\n\023optional_order_list\030\006 \003(\r\022\033\n\023Unk270" +
-      "0_OEDDPDJEEPC\030\003 \001(\rB\033\n\031emu.grasscutter.n" +
-      "et.protob\006proto3"
+      "aram.proto\"\274\001\n\031BartenderCompleteOrderReq" +
+      "\022\020\n\010cup_type\030\016 \001(\r\022\021\n\tqte_count\030\007 \001(\r\022\020\n" +
+      "\010quest_id\030\013 \001(\r\022\035\n\titem_list\030\n \003(\0132\n.Ite" +
+      "mParam\022\027\n\017is_view_formula\030\t \001(\010\022\033\n\023optio" +
+      "nal_order_list\030\006 \003(\r\022\023\n\013retry_count\030\003 \001(" +
+      "\rB\033\n\031emu.grasscutter.net.protob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1401,7 +1400,7 @@ public final class BartenderCompleteOrderReqOuterClass {
     internal_static_BartenderCompleteOrderReq_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_BartenderCompleteOrderReq_descriptor,
-        new java.lang.String[] { "CupSize", "Unk2700CHHJBPDPICI", "QuestId", "ItemList", "IsViewFormula", "OptionalOrderList", "Unk2700OEDDPDJEEPC", });
+        new java.lang.String[] { "CupType", "QteCount", "QuestId", "ItemList", "IsViewFormula", "OptionalOrderList", "RetryCount", });
     emu.grasscutter.net.proto.ItemParamOuterClass.getDescriptor();
   }
 
