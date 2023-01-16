@@ -1315,6 +1315,7 @@ public class Player {
         session.send(new PacketFinishedParentQuestNotify(this));
         session.send(new PacketBattlePassAllDataNotify(this));
         session.send(new PacketQuestListNotify(this));
+        session.send(new PacketQuestGlobalVarNotify(this));
         session.send(new PacketCodexDataFullNotify(this));
         session.send(new PacketAllWidgetDataNotify(this));
         session.send(new PacketWidgetGadgetAllDataNotify());

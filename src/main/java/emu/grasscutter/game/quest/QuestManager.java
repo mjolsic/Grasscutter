@@ -162,6 +162,7 @@ public class QuestManager extends BasePlayerManager {
         queueEvent(QuestCond.QUEST_COND_QUEST_GLOBAL_VAR_EQUAL, variable, value);
         queueEvent(QuestCond.QUEST_COND_QUEST_GLOBAL_VAR_GREATER, variable, value);
         queueEvent(QuestCond.QUEST_COND_QUEST_GLOBAL_VAR_LESS, variable, value);
+        getPlayer().sendPacket(new PacketQuestGlobalVarNotify(getPlayer()));
     }
 
     public GameMainQuest getMainQuestById(int mainQuestId) {

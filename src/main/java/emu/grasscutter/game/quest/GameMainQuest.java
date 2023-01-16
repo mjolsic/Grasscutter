@@ -21,6 +21,7 @@ import emu.grasscutter.net.proto.ParentQuestOuterClass.ParentQuest;
 import emu.grasscutter.server.packet.send.PacketCodexDataUpdateNotify;
 import emu.grasscutter.server.packet.send.PacketFinishedParentQuestUpdateNotify;
 import emu.grasscutter.server.packet.send.PacketQuestProgressUpdateNotify;
+import emu.grasscutter.server.packet.send.PacketQuestUpdateQuestVarNotify;
 import emu.grasscutter.utils.Position;
 import lombok.Getter;
 import lombok.val;
@@ -113,6 +114,7 @@ public class GameMainQuest {
         this.questManager.queueEvent(QuestContent.QUEST_CONTENT_QUEST_VAR_EQUAL, index, value);
         this.questManager.queueEvent(QuestContent.QUEST_CONTENT_QUEST_VAR_GREATER, index, value);
         this.questManager.queueEvent(QuestContent.QUEST_CONTENT_QUEST_VAR_LESS, index, value);
+        this.getOwner().sendPacket(new PacketQuestUpdateQuestVarNotify(this.getParentQuestId(), this.questVars));
     }
 
 
