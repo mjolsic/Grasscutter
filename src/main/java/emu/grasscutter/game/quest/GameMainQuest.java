@@ -38,8 +38,6 @@ public class GameMainQuest {
     @Getter private Map<Integer, GameQuest> childQuests;
     @Getter private int parentQuestId;
     @Getter private int[] questVars;
-    //QuestUpdateQuestVarReq is sent in two stages...
-    @Getter private List<Integer> questVarsUpdate;
     @Getter private ParentQuestState state;
     @Getter private boolean isFinished;
     @Getter List<QuestGroupSuite> questGroupSuites;
